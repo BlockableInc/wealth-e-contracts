@@ -17,7 +17,7 @@ contract WealthECrowdsale is Pausable {
     uint256 public constant END_TIME = 1522454400;                             // Mar. 31, 2018 12:00am GMT crowdsale end time in seconds.
     uint256 public constant PUBLIC_START_TIME = 1518220800;                    // Feb. 10, 2018 12:00am GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
-    uint256 public constant TOTAL_SALE_TOKENS = 100 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
+    uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
     uint256 public constant MINIMUM_CONTRIBUTION = 151 ether;                  // Minimum ETH contribution of 151.
 
 
@@ -30,6 +30,10 @@ contract WealthECrowdsale is Pausable {
     // Hardcap expressed in wei.
     uint256 public cap;
     bool public capSet = false;
+
+    // Public Presale cap expressed in wei.
+    uint256 public presaleCap;
+    bool public presaleCapSet = false;
 
     // Cumulative tracking variable.
     uint256 public weiRaised;
@@ -121,6 +125,17 @@ contract WealthECrowdsale is Pausable {
     }
 
 
+    /**
+     *
+     * @dev Ensures the ETH public presale cap is set.
+     *
+     */
+    modifier presaleCapIsSet() {
+        require(presaleCapSet);
+        _;
+    }
+
+
     /*----------- Owner: Variable Setters -----------*/
 
     /**
@@ -163,6 +178,20 @@ contract WealthECrowdsale is Pausable {
 
         capSet = true;
         cap = _cap;
+    }
+
+
+    /**
+     * @dev Allows owner to set the public presale cap (denoted in wei).
+     *      To maintain trustlessness, the cap can only be set one time.
+     * @param _cap The ETH public presale cap expressed in wei.
+     */
+    function setPresaleCap(uint256 _cap) public onlyOwner {
+        require(!presaleCapSet);
+        require(_cap > 0);
+
+        presaleCapSet = true;
+        presaleCap = _cap;
     }
 
 
@@ -316,6 +345,7 @@ contract WealthECrowdsale is Pausable {
         internal
         multiSigIsSet
         capIsSet
+        presaleCapIsSet
         rateIsSet
         whenNotPaused
         returns (bool)
@@ -338,7 +368,12 @@ contract WealthECrowdsale is Pausable {
         uint256 tokens = weiAmount.mul(rate);
 
         // Calculate bonus.
-        uint256 bonusTokens = presaleBonusWei(weiAmount).mul(rate);
+        uint256 bonusTokens;
+        if (duringPresale()) {
+            bonusTokens = presaleBonusWei(weiAmount).mul(rate);
+        } else {
+            bonusTokens = fullsaleBonusWei(weiAmount).mul(rate);
+        }
         uint256 tokensPurchased = tokens.add(bonusTokens);
 
         // Update tracking state.
@@ -424,6 +459,48 @@ contract WealthECrowdsale is Pausable {
         }
 
         return bonus;
+    }
+
+    /**
+     * @dev Determines bonus in terms of wei.
+     * @param _wei amount of wei contributed.
+     */
+    function fullsaleBonusWei(uint256 _wei) public view returns (uint256) {
+        uint256 bonus = 0;
+        uint256 twoDigitPercent = 10 ** 16;
+        uint256 oneDigitPercent = 10 ** 15;
+
+        if (now <= START_TIME + 1 hours) {
+            // 30% in first hour.
+            bonus = (_wei * 30 * twoDigitPercent) / GRAINS;
+        } else if (now <= START_TIME + 1 days) {
+            // 25% in first day.
+            bonus = (_wei * 25 * twoDigitPercent) / GRAINS;
+        } else if (now <= START_TIME + 4 days) {
+            // 20% within first 4 days.
+            bonus = (_wei * 20 * twoDigitPercent) / GRAINS;
+        } else if (now <= START_TIME + 1 weeks) {
+            // 15% within fist week.
+            bonus = (_wei * 15 * twoDigitPercent) / GRAINS;
+        } else if (now <= START_TIME + 2 weeks) {
+            // 10% within first 2 weeks.
+            bonus = (_wei * 10 * twoDigitPercent) / GRAINS;
+        } else if (now <= START_TIME + 3 weeks) {
+            // 5% within first 3 weeks.
+            // (note 10**15 as there's one less decimal place in 5%.)
+            bonus = (_wei * 5 * oneDigitPercent) / GRAINS;
+        }
+
+        return bonus;
+    }
+
+    /**
+     * @dev indicates whether the presale is currently open.
+     */
+    function duringPresale() public view returns (bool) {
+        bool withinPresalePeriod = now >= START_TIME && now < PUBLIC_START_TIME;
+        bool belowPresaleCap = weiRaised < presaleCap;
+        return withinPresalePeriod && belowPresaleCap;
     }
 
 
