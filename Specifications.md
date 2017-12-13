@@ -10,7 +10,7 @@ Symbol: WRE
 
 Decimals: 18
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 
 ## Token Methods
@@ -39,7 +39,7 @@ Public sale start: January 10, 2018 12:00am GMT
 
 Public sale end: March 31, 2018 12:00am GMT
 
-Owner is permitted to close the presale early.
+Owner is permitted to close the sale early.
 
 - [ ] test coverage complete
 
@@ -65,6 +65,13 @@ The crowdsale contract forwards funds to multisig upon receipt.
 The crowdsale will have a firm cap set in ETH. The hardcap is to be converted from USD to ETH prior to the sale commencing and set using `setCap`. Hardcap setter allows a one time setting of that hard cap (ETH equivalent of USD hardcap)
 
 In addition to the ETH hardcap, no more than `300 million` tokens are to be sold in this sale.
+
+- [x] test coverage complete
+
+
+## Presale Cap
+
+Additionally there is a presale cap. Once reached the sale converts to the full public sale with a separate set of bonus conditions.
 
 - [ ] test coverage complete
 
@@ -101,32 +108,37 @@ Tokens are distributed as each contribution takes place. However, tokens are to 
 
 ## Rates
 
+Initial price to be the ETH equivalent of USD $0.10. Test cases assume $700 USD per ETH.
+
+Initial rate is 7000 WRE per ETH.
+
 
 ### Presale Bonuses:
 
-Based on USD bonus tiers when ETH/USD is $330.
+Based on USD bonus tiers when ETH/USD is $700.
 
 Fixed bonuses based in ETH to allow for hardcoding into the smart contract.
 
-ETH equivalents below rounded down to nearest ETH.
+ETH equivalents below rounded to nearest ETH.
 
-Minimum: `151 ETH (~$50K USD)`
+Minimum: `71 ETH (~$50K USD)`
+
+- [x] test coverage complete
+
 
 #### Bonus tiers
 
-$250K+: 45%
-$100K+ < $250K: 40%
-$50K+ < $100K: 35%
+  - if spend >= $250K (357 ETH): 45%
+  - if spend >= $100K (143 ETH): 40%
+  - if spend >= $50K (71): 35%
+  - if spend < $50k: 0%
 
-  - ~`757 ETH (~$250K+ USD):` 35%~
-  - ~`303 ETH (~$100K+):` 30%~
-  - ~`151 ETH (~$50K USD):` 25%~
 
-~Note: Individual hardcap of up to `30303 ETH (~$10M)`. (To be handled manually by whitelistDefault setter.)~
+~Note: Individual hardcap of up to `14,285 ETH (~$10M)`. (To be handled manually by whitelistDefault setter.)~
 
 Note: Due to integer rounding, calculations are accurate to within 1 wei (0.000000000000000001 ETH)
 
-- [] test coverage complete
+- [x] test coverage complete
 
 
 ### Full Sale Bonuses
@@ -139,6 +151,8 @@ Note: Due to integer rounding, calculations are accurate to within 1 wei (0.0000
 6. Week 3: 5%
 7. Week 4: 0%
 
+
+- [ ] test coverage complete
 
 ## Finalize
 

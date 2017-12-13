@@ -18,7 +18,7 @@ contract WealthECrowdsale is Pausable {
     uint256 public constant PUBLIC_START_TIME = 1518220800;                    // Feb. 10, 2018 12:00am GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
     uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
-    uint256 public constant MINIMUM_CONTRIBUTION = 151 ether;                  // Minimum ETH contribution of 151.
+    uint256 public constant MINIMUM_PRESALE_CONTRIBUTION = 71 ether;           // Minimum ETH contribution of 71.
 
 
     /*----------- Global Variables -----------*/
@@ -361,15 +361,14 @@ contract WealthECrowdsale is Pausable {
         // Update amount of whitelist cap used.
         addressWhitelistUsed[msg.sender] = addressWhitelistUsed[msg.sender].add(weiAmount);
 
-        // Check minimum contribution is made.
-        require(addressWhitelistUsed[msg.sender] >= MINIMUM_CONTRIBUTION);
-
         // Calculate token amount to be created.
         uint256 tokens = weiAmount.mul(rate);
 
         // Calculate bonus.
         uint256 bonusTokens;
         if (duringPresale()) {
+            // Check minimum contribution is made.
+            require(addressWhitelistUsed[msg.sender] >= MINIMUM_PRESALE_CONTRIBUTION);
             bonusTokens = presaleBonusWei(weiAmount).mul(rate);
         } else {
             bonusTokens = fullsaleBonusWei(weiAmount).mul(rate);
@@ -447,19 +446,20 @@ contract WealthECrowdsale is Pausable {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
 
-        if (_wei >= 757 ether) {
-            // 35% for 757 ETH or more.
+        if (_wei >= 357 ether) {
+            // 45% for 357 ETH or more.
+            bonus = (_wei * 45 * twoDigitPercent) / GRAINS;
+        } else if (_wei >= 143 ether) {
+            // 40% for 143 ETH or more.
+            bonus = (_wei * 40 * twoDigitPercent) / GRAINS;
+        } else if (_wei >= 71 ether) {
+            // 35% for 71 ETH or more.
             bonus = (_wei * 35 * twoDigitPercent) / GRAINS;
-        } else if (_wei >= 303 ether) {
-            // 30% for 303 ETH or more.
-            bonus = (_wei * 30 * twoDigitPercent) / GRAINS;
-        } else {
-            // 25% otherwise.
-            bonus = (_wei * 25 * twoDigitPercent) / GRAINS;
         }
 
         return bonus;
     }
+
 
     /**
      * @dev Determines bonus in terms of wei.
@@ -493,6 +493,7 @@ contract WealthECrowdsale is Pausable {
 
         return bonus;
     }
+
 
     /**
      * @dev indicates whether the presale is currently open.
