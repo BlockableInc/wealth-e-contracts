@@ -41,7 +41,7 @@ Public sale end: March 31, 2018 12:00am GMT
 
 Owner is permitted to close the sale early.
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 
 ## Crowdsale Methods

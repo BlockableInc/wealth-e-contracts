@@ -61,6 +61,7 @@ contract('WealthECrowdsale', (accounts) => {
         const start = await crowdsale.START_TIME();
         const end = await crowdsale.END_TIME();
         const publicStart = await crowdsale.PUBLIC_START_TIME();
+        const fullSaleStart = await crowdsale.fullSaleStart();
         const grains = await crowdsale.GRAINS();
         const totalSaleTokens = await crowdsale.TOTAL_SALE_TOKENS();
         const minContribution = await crowdsale.MINIMUM_PRESALE_CONTRIBUTION();
@@ -68,6 +69,7 @@ contract('WealthECrowdsale', (accounts) => {
         assert.strictEqual(start.toNumber(), startTime);
         assert.strictEqual(end.toNumber(), endTime);
         assert.strictEqual(publicStart.toNumber(), publicStartTime);
+        assert.strictEqual(fullSaleStart.toNumber(), publicStartTime);
         assert.strictEqual(parseInt(fromWei(grains)), 1);
         assert.strictEqual(parseInt(fromWei(totalSaleTokens)), globalTokenCap);
         assert.strictEqual(parseInt(fromWei(minContribution)), globalPresaleMinETH);
@@ -1351,6 +1353,54 @@ contract('WealthECrowdsale', (accounts) => {
 
     });
 
+
+    /*----------- Transition to Full Sale -----------*/
+
+    it('should transition to full sale once presaleCap reached', async () => {
+
+        token = await WealthE.new({ from: owner });
+        crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
+
+        // Set ownership, multiSig, rate, and cap.
+        await token.transferOwnership(crowdsale.address, { from: owner });
+        await crowdsale.claimTokenOwnership({ from: owner });
+        await crowdsale.setMultiSig(multiSig, { from: owner });
+        await crowdsale.setRate(1, { from: owner });
+        await crowdsale.setCap(toWei(30303 * 3), { from: owner });
+        await crowdsale.setPresaleCap(toWei(30303), { from: owner });
+
+        // Use default whitelist cap.
+        await crowdsale.setDefaultWhitelistCap(
+            toWei(30303),
+            { from: owner }
+        );
+
+        // Add to whitelist.
+        await crowdsale.setWhitelistAddressBatch(
+            [accounts[5], accounts[8], accounts[9]],
+            [1, 1, 1],
+            { from: owner }
+        );
+
+        // Currently during presale.
+        assert.isTrue(await crowdsale.duringPresale());
+
+        // Complete purchase.
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[5],
+            gas: 200000,
+            value: toWei(30303)
+        });
+
+
+        // Confirm token allocation took place.
+        const tokenBalance_0 = await token.balanceOf(accounts[5]);
+        assert.strictEqual(fromWei(tokenBalance_0).toNumber(), 30303 * (presaleBonuses[2]) * 1);
+
+        // Confirm transitioned into full sale.
+        assert.isFalse(await crowdsale.duringPresale());
+    });
 
     /*----------- Sale Close -----------*/
 
