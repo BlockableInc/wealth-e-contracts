@@ -479,7 +479,6 @@ contract WealthECrowdsale is Pausable {
     function fullsaleBonusWei(uint256 _wei) public view returns (uint256) {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
-        uint256 oneDigitPercent = 10 ** 15;
 
         if (now <= fullSaleStart + 1 hours) {
             // 30% in first hour.
@@ -498,8 +497,7 @@ contract WealthECrowdsale is Pausable {
             bonus = (_wei * 10 * twoDigitPercent) / GRAINS;
         } else if (now <= fullSaleStart + 3 weeks) {
             // 5% within first 3 weeks.
-            // (note 10**15 as there's one less decimal place in 5%.)
-            bonus = (_wei * 5 * oneDigitPercent) / GRAINS;
+            bonus = (_wei * 5 * twoDigitPercent) / GRAINS;
         }
 
         return bonus;

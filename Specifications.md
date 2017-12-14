@@ -73,7 +73,7 @@ In addition to the ETH hardcap, no more than `300 million` tokens are to be sold
 
 Additionally there is a presale cap. Once reached the sale converts to the full public sale with a separate set of bonus conditions.
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 
 ## Distribution
@@ -152,7 +152,7 @@ Note: Due to integer rounding, calculations are accurate to within 1 wei (0.0000
 7. Week 4: 0%
 
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 ## Finalize
 

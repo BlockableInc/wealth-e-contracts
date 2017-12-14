@@ -31,10 +31,27 @@ const globalRate = 7000;
 const globalTokenCap = 300 * million;
 const globalPresaleMinETH = 71;
 const presaleBonuses = [1.35, 1.4, 1.45];
+const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 const presaleBonuseThresholds = [globalPresaleMinETH, 143, 357];
 const startTime = new Date('Wed, 10 Jan 2018 00:00:00 GMT').getUnixTime();
 const publicStartTime = new Date('Sat, 10 Feb 2018 00:00:00 GMT').getUnixTime();;
 const endTime = new Date('Sat, 31 Mar 2018 00:00:00 GMT').getUnixTime();
+const fullSaleDates = [
+    // First hour.
+    publicStartTime,
+    // First day.
+    new Date('Sat, 10 Feb 2018 02:00:01 GMT').getUnixTime(),
+    // First 2 - 4 days.
+    new Date('Mon, 12 Feb 2018 00:00:01 GMT').getUnixTime(),
+    // First week.
+    new Date('Thurs, 15 Feb 2018 00:00:01 GMT').getUnixTime(),
+    // Second week.
+    new Date('Sat, 17 Feb 2018 00:00:01 GMT').getUnixTime(),
+    // Third week.
+    new Date('Sat, 24 Feb 2018 00:00:01 GMT').getUnixTime(),
+    // Fourth week.
+    new Date('Sat, 3 Mar 2018 00:00:01 GMT').getUnixTime()
+];
 
 contract('WealthECrowdsale', (accounts) => {
 
@@ -1344,7 +1361,7 @@ contract('WealthECrowdsale', (accounts) => {
         const tokenBalance_1 = await token.balanceOf(accounts[8]);
         assert.strictEqual(
             fromWei(tokenBalance_1).toNumber(),
-            // Avoid floating point inpercision.
+            // Avoid floating point imprecision.
             new BigNumber(presaleBonuseThresholds[1]).mul((presaleBonuses[1]) * 100).div(100).mul(globalRate).toNumber()
         );
 
@@ -1401,6 +1418,7 @@ contract('WealthECrowdsale', (accounts) => {
         // Confirm transitioned into full sale.
         assert.isFalse(await crowdsale.duringPresale());
     });
+
 
     /*----------- Sale Close -----------*/
 
@@ -1505,6 +1523,160 @@ contract('WealthECrowdsale', (accounts) => {
         assert.strictEqual(tokenOwner, owner);
 
     });
+
+
+
+    /*----------- Time Based Bonuses -----------*/
+
+
+    it('should give correct bonuses', async () => {
+
+        token = await WealthE.new({ from: owner });
+        crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
+
+        // Set ownership, multiSig, rate, and cap.
+        await token.transferOwnership(crowdsale.address, { from: owner });
+        await crowdsale.claimTokenOwnership({ from: owner });
+        await crowdsale.setMultiSig(multiSig, { from: owner });
+        await crowdsale.setRate(globalRate, { from: owner });
+        await crowdsale.setCap(toWei(30303 * 3), { from: owner });
+        await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
+
+        // Use default whitelist cap.
+        await crowdsale.setDefaultWhitelistCap(
+            toWei(30303),
+            { from: owner }
+        );
+
+        // Add to whitelist.
+        await crowdsale.setWhitelistAddressBatch(
+            [
+                accounts[10],
+                accounts[11],
+                accounts[12],
+                accounts[13],
+                accounts[14],
+                accounts[15],
+                accounts[16],
+                accounts[17]
+            ],
+            [1, 1, 1, 1, 1, 1, 1, 1],
+            { from: owner }
+        );
+
+
+        await increaseTimeTo(fullSaleDates[0]);
+        assert.isFalse(await crowdsale.duringPresale());
+
+        // Complete purchases at each time interval.
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[10],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[1]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[11],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[2]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[12],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[3]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[13],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[4]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[14],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[5]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[15],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+        await increaseTimeTo(fullSaleDates[6]);
+
+        await web3.eth.sendTransaction({
+            to: crowdsale.address,
+            from: accounts[16],
+            gas: 200000,
+            value: toWei(2)
+        });
+
+
+
+        // Confirm token allocation took place.
+        const tokenBalance_0 = await token.balanceOf(accounts[10]);
+        assert.strictEqual(
+            fromWei(tokenBalance_0).toNumber(),
+            Math.round(2 * fullsaleBonuses[6] * globalRate, 0)
+        );
+
+        const tokenBalance_1 = await token.balanceOf(accounts[11]);
+        assert.strictEqual(
+            fromWei(tokenBalance_1).toNumber(),
+            Math.round(2 * fullsaleBonuses[5] * globalRate, 0)
+        );
+
+        const tokenBalance_2 = await token.balanceOf(accounts[12]);
+        assert.strictEqual(
+            fromWei(tokenBalance_2).toNumber(),
+            Math.round(2 * fullsaleBonuses[4] * globalRate, 0)
+        );
+
+        const tokenBalance_3 = await token.balanceOf(accounts[13]);
+        assert.strictEqual(
+            fromWei(tokenBalance_3).toNumber(),
+            Math.round(2 * fullsaleBonuses[3] * globalRate, 0)
+        );
+
+        const tokenBalance_4 = await token.balanceOf(accounts[14]);
+        assert.strictEqual(
+            fromWei(tokenBalance_4).toNumber(),
+            Math.round(2 * fullsaleBonuses[2] * globalRate, 0)
+        );
+
+        const tokenBalance_5 = await token.balanceOf(accounts[15]);
+        assert.strictEqual(
+            fromWei(tokenBalance_5).toNumber(),
+            Math.round(2 * fullsaleBonuses[1] * globalRate, 0)
+        );
+
+        const tokenBalance_6 = await token.balanceOf(accounts[16]);
+        assert.strictEqual(
+            fromWei(tokenBalance_6).toNumber(),
+            Math.round(2 * fullsaleBonuses[0] * globalRate, 0)
+        );
+    });
+
+    /*----------- After endTime: Sale Close -----------*/
 
 
     it('should permit finalize after endTime', async () => {
