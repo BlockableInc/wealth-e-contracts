@@ -372,7 +372,7 @@ contract WealthECrowdsale is Pausable {
 
         // Calculate bonus.
         uint256 bonusTokens;
-        if (duringPresale) {
+        if (presalePurcahse) {
             // Check minimum contribution is made.
             require(addressWhitelistUsed[msg.sender] >= MINIMUM_PRESALE_CONTRIBUTION);
             bonusTokens = presaleBonusWei(weiAmount).mul(rate);
@@ -398,7 +398,7 @@ contract WealthECrowdsale is Pausable {
         forwardFunds();
 
         // Trigger presale end based on cap.
-        if (duringPresale && !duringPresale()) {
+        if (presalePurcahse && !duringPresale()) {
             fullSaleStart = now;
         }
 
