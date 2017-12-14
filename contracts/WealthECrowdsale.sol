@@ -42,6 +42,9 @@ contract WealthECrowdsale is Pausable {
     // Owner can trigger an early end.
     bool ownerEnded = false;
 
+    // Date to begin full sale.
+    uint256 public fullSaleStart = PUBLIC_START_TIME;
+
 
     /*----------- Global Address Vairables -----------*/
 
@@ -391,6 +394,11 @@ contract WealthECrowdsale is Pausable {
         // Immediately send ETH to multiSig address.
         forwardFunds();
 
+        // Trigger presale end based on cap.
+        if (!duringPresale()) {
+            fullSaleStart = now;
+        }
+
         return true;
     }
 
@@ -470,22 +478,22 @@ contract WealthECrowdsale is Pausable {
         uint256 twoDigitPercent = 10 ** 16;
         uint256 oneDigitPercent = 10 ** 15;
 
-        if (now <= START_TIME + 1 hours) {
+        if (now <= fullSaleStart + 1 hours) {
             // 30% in first hour.
             bonus = (_wei * 30 * twoDigitPercent) / GRAINS;
-        } else if (now <= START_TIME + 1 days) {
+        } else if (now <= fullSaleStart + 1 days) {
             // 25% in first day.
             bonus = (_wei * 25 * twoDigitPercent) / GRAINS;
-        } else if (now <= START_TIME + 4 days) {
+        } else if (now <= fullSaleStart + 4 days) {
             // 20% within first 4 days.
             bonus = (_wei * 20 * twoDigitPercent) / GRAINS;
-        } else if (now <= START_TIME + 1 weeks) {
+        } else if (now <= fullSaleStart + 1 weeks) {
             // 15% within fist week.
             bonus = (_wei * 15 * twoDigitPercent) / GRAINS;
-        } else if (now <= START_TIME + 2 weeks) {
+        } else if (now <= fullSaleStart + 2 weeks) {
             // 10% within first 2 weeks.
             bonus = (_wei * 10 * twoDigitPercent) / GRAINS;
-        } else if (now <= START_TIME + 3 weeks) {
+        } else if (now <= fullSaleStart + 3 weeks) {
             // 5% within first 3 weeks.
             // (note 10**15 as there's one less decimal place in 5%.)
             bonus = (_wei * 5 * oneDigitPercent) / GRAINS;
@@ -499,7 +507,7 @@ contract WealthECrowdsale is Pausable {
      * @dev indicates whether the presale is currently open.
      */
     function duringPresale() public view returns (bool) {
-        bool withinPresalePeriod = now >= START_TIME && now < PUBLIC_START_TIME;
+        bool withinPresalePeriod = now >= START_TIME && now < fullSaleStart;
         bool belowPresaleCap = weiRaised < presaleCap;
         return withinPresalePeriod && belowPresaleCap;
     }
