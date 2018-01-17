@@ -44,6 +44,7 @@ contract WealthECrowdsale is Pausable {
 
     // Date to begin full sale.
     uint256 public fullSaleStart = PUBLIC_START_TIME;
+    uint256 public fullSaleStartBlock = 0;
 
 
     /*----------- Global Address Vairables -----------*/
@@ -400,6 +401,7 @@ contract WealthECrowdsale is Pausable {
         // Trigger presale end based on cap.
         if (presalePurchase && !duringPresale()) {
             fullSaleStart = now;
+            fullSaleStartBlock = block.number;
         }
 
         return true;
@@ -480,7 +482,7 @@ contract WealthECrowdsale is Pausable {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
 
-        if (now <= fullSaleStart + 1 hours) {
+        if ((block.number - fullSaleStartBlock) >= 900) {
             // 30% in first hour.
             bonus = _wei.mul(30).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 1 days) {
