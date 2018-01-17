@@ -157,7 +157,7 @@ contract WealthECrowdsale is Pausable {
 
 
     /**
-     * @dev Allows owner to set the Tokens per ETH rate.
+     * @dev Allows owner to set the Tokens per ETH rate (in grains per wei).
      *      To maintain trustlessness, the rate can only be set one time.
      * @param _rate The Tokens per ETH rate.
      */
