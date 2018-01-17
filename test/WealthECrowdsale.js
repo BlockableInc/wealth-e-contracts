@@ -417,7 +417,7 @@ contract('WealthECrowdsale', (accounts) => {
 
     it('it should fail if called by address other than owner', async () => {
 
-        await token.setUpReclaim({ from: owner });
+        await token.setupReclaim({ from: owner });
         await token.transferOwnership(crowdsale.address, { from: owner });
         await crowdsale.claimTokenOwnership({ from: owner });
 
@@ -510,7 +510,7 @@ contract('WealthECrowdsale', (accounts) => {
         // Reclaim, pause, then hand back to crowdsale.
         await token.reclaimOwnership({ from: owner });
         await token.pause({ from: owner })
-        await token.setUpReclaim({ from: owner });
+        await token.setupReclaim({ from: owner });
         await token.transferOwnership(crowdsale.address, { from: owner });
         await crowdsale.claimTokenOwnership({ from: owner });
 
@@ -616,6 +616,39 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.mintPresaleTokensBatch(
                 [],
                 [],
+                { from: owner }
+            );
+        } catch (error) {
+            assertError(error);
+        }
+
+
+
+        // Confirm no token transfer took place.
+        const tokenBalance_0 = await token.balanceOf(batchAddresses[0]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 0);
+
+        const tokenBalance_1 = await token.balanceOf(batchAddresses[1]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 0);
+
+        const tokenBalance_2 = await token.balanceOf(batchAddresses[2]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 0);
+
+        const tokenBalance_3 = await token.balanceOf(batchAddresses[3]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 0);
+
+        const tokenBalance_4 = await token.balanceOf(batchAddresses[4]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance_4)), 0);
+
+    });
+
+
+    it('Batch Presale: it should fail surpasses TOTAL_SALE_TOKENS', async () => {
+
+        try {
+            await crowdsale.mintPresaleTokensBatch(
+                batchAddresses,
+                [100 * million, 50 * million, 50 * million, 50 * million, 51 * million].map(x => toWei(x)),
                 { from: owner }
             );
         } catch (error) {
