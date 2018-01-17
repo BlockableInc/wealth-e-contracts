@@ -98,11 +98,11 @@ contract('WealthE', (accounts) => {
     });
 
 
-    it('should fail if address other than owner calls `setUpReclaim`', async () => {
+    it('should fail if address other than owner calls `setupReclaim`', async () => {
 
-        // Attempt to setUpReclaim.
+        // Attempt to setupReclaim.
         try {
-            await token.setUpReclaim({ from: accounts[1] });
+            await token.setupReclaim({ from: accounts[1] });
         } catch (error) {
             assertError(error);
         }
@@ -116,10 +116,10 @@ contract('WealthE', (accounts) => {
     });
 
 
-    it('should permit current owner to `setUpReclaim`', async () => {
+    it('should permit current owner to `setupReclaim`', async () => {
 
-        // Attempt to setUpReclaim.
-        await token.setUpReclaim({ from: owner });
+        // Attempt to setupReclaim.
+        await token.setupReclaim({ from: owner });
 
         // Confirm no change to address.
         assert.strictEqual(await token.reclaimableOwner(), owner);
@@ -129,7 +129,7 @@ contract('WealthE', (accounts) => {
 
     it('should fail if address other than reclaimableOwner calls `resetReclaim`', async () => {
 
-        // Attempt to setUpReclaim.
+        // Attempt to setupReclaim.
         try {
             await token.resetReclaim({ from: accounts[1] });
         } catch (error) {
@@ -144,7 +144,7 @@ contract('WealthE', (accounts) => {
 
     it('should permit current reclaimableOwner to `resetReclaim`', async () => {
 
-        // Attempt to setUpReclaim.
+        // Attempt to setupReclaim.
         await token.resetReclaim({ from: owner });
 
         // Confirm reset occured.
@@ -159,7 +159,7 @@ contract('WealthE', (accounts) => {
     it('should fail if address other than reclaimableOwner calls `reclaimOwnership`', async () => {
 
         // Current owner can reclaim.
-        await token.setUpReclaim({ from: owner });
+        await token.setupReclaim({ from: owner });
 
         // Transfer ownership to another address.
         await token.transferOwnership(accounts[1], { from: owner });
@@ -193,10 +193,10 @@ contract('WealthE', (accounts) => {
 
     });
 
-    it('should fail if address other than reclaimableOwner calls `setUpReclaim`', async () => {
+    it('should fail if address other than reclaimableOwner calls `setupReclaim`', async () => {
 
         // Current owner can reclaim.
-        await token.setUpReclaim({ from: owner });
+        await token.setupReclaim({ from: owner });
 
         // Transfer ownership to another address.
         await token.transferOwnership(accounts[1], { from: owner });
@@ -205,7 +205,7 @@ contract('WealthE', (accounts) => {
 
         // Attempt to reclaim from wrong address.
         try {
-            await token.setUpReclaim({ from: accounts[1] });
+            await token.setupReclaim({ from: accounts[1] });
         } catch (error) {
             assertError(error);
         }

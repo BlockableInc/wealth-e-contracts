@@ -30,7 +30,7 @@ contract WealthE is MintableToken, PausableToken, Claimable {
     /**
      * @dev Sets the reclaim address to current owner.
      */
-    function setUpReclaim() public onlyOwner {
+    function setupReclaim() public onlyOwner {
         require(reclaimableOwner == address(0));
 
         reclaimableOwner = msg.sender;
