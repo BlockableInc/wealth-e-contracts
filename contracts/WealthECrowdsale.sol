@@ -236,9 +236,10 @@ contract WealthECrowdsale is Pausable {
         require(_address != address(this));
         require(_address != multiSig);
 
-        require(token.mint(_address, _tokenAmount));
-
         tokensDistributed = tokensDistributed.add(_tokenAmount);
+        require(tokensDistributed <= TOTAL_SALE_TOKENS);
+
+        require(token.mint(_address, _tokenAmount));
 
         return true;
     }
