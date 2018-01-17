@@ -354,7 +354,6 @@ contract WealthECrowdsale is Pausable {
         whenNotPaused
         returns (bool)
     {
-        require(msg.sender != address(0));
         require(validPurchase());
 
         // Check if durring presale.
