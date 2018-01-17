@@ -44,6 +44,7 @@ contract WealthECrowdsale is Pausable {
 
     // Date to begin full sale.
     uint256 public fullSaleStart = PUBLIC_START_TIME;
+    uint256 public fullSaleStartBlock = 0;
 
 
     /*----------- Global Address Vairables -----------*/
@@ -401,6 +402,7 @@ contract WealthECrowdsale is Pausable {
         // Trigger presale end based on cap.
         if (presalePurchase && !duringPresale()) {
             fullSaleStart = now;
+            fullSaleStartBlock = block.number;
         }
 
         return true;
@@ -460,13 +462,13 @@ contract WealthECrowdsale is Pausable {
 
         if (_wei >= 357 ether) {
             // 45% for 357 ETH or more.
-            bonus = (_wei * 45 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(45).mul(twoDigitPercent).div(GRAINS);
         } else if (_wei >= 143 ether) {
             // 40% for 143 ETH or more.
-            bonus = (_wei * 40 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(40).mul(twoDigitPercent).div(GRAINS);
         } else if (_wei >= 71 ether) {
             // 35% for 71 ETH or more.
-            bonus = (_wei * 35 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(35).mul(twoDigitPercent).div(GRAINS);
         }
 
         return bonus;
@@ -481,24 +483,24 @@ contract WealthECrowdsale is Pausable {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
 
-        if (now <= fullSaleStart + 1 hours) {
+        if ((block.number - fullSaleStartBlock) >= 900) {
             // 30% in first hour.
-            bonus = (_wei * 30 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(30).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 1 days) {
             // 25% in first day.
-            bonus = (_wei * 25 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(25).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 4 days) {
             // 20% within first 4 days.
-            bonus = (_wei * 20 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(20).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 1 weeks) {
             // 15% within fist week.
-            bonus = (_wei * 15 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(15).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 2 weeks) {
             // 10% within first 2 weeks.
-            bonus = (_wei * 10 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(10).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 3 weeks) {
             // 5% within first 3 weeks.
-            bonus = (_wei * 5 * twoDigitPercent) / GRAINS;
+            bonus = _wei.mul(5).mul(twoDigitPercent).div(GRAINS);
         }
 
         return bonus;
