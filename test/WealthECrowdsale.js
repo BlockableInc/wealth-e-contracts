@@ -29,28 +29,28 @@ let batchAddresses;
 let batchAmounts;
 const globalRate = 7000;
 const globalTokenCap = 300 * million;
-const globalPresaleMinETH = 71;
+const globalPresaleMinETH = 41;
 const presaleBonuses = [1.35, 1.4, 1.45];
 const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
-const presaleBonuseThresholds = [globalPresaleMinETH, 143, 357];
-const startTime = new Date('Wed, 10 Jan 2018 00:00:00 GMT').getUnixTime();
-const publicStartTime = new Date('Sat, 10 Feb 2018 00:00:00 GMT').getUnixTime();;
-const endTime = new Date('Sat, 31 Mar 2018 00:00:00 GMT').getUnixTime();
+const presaleBonuseThresholds = [globalPresaleMinETH, 83, 208];
+const startTime = new Date('Thurs, 1 Feb 2018 00:00:00 GMT').getUnixTime();
+const publicStartTime = new Date('Sun, 4 Mar 2018 00:00:00 GMT').getUnixTime();;
+const endTime = new Date('Mon, 30 Apr 2018 00:00:00 GMT').getUnixTime();
 const fullSaleDates = [
     // First hour.
     publicStartTime,
     // First day.
-    new Date('Sat, 10 Feb 2018 02:00:01 GMT').getUnixTime(),
+    new Date('Sun, 4 Mar 2018 02:00:01 GMT').getUnixTime(),
     // First 2 - 4 days.
-    new Date('Mon, 12 Feb 2018 00:00:01 GMT').getUnixTime(),
+    new Date('Tues, 6 Mar 2018 00:00:01 GMT').getUnixTime(),
     // First week.
-    new Date('Thurs, 15 Feb 2018 00:00:01 GMT').getUnixTime(),
+    new Date('Fri, 9 Mar 2018 00:00:01 GMT').getUnixTime(),
     // Second week.
-    new Date('Sat, 17 Feb 2018 00:00:01 GMT').getUnixTime(),
+    new Date('Sun, 11 Mar 2018 00:00:01 GMT').getUnixTime(),
     // Third week.
-    new Date('Sat, 24 Feb 2018 00:00:01 GMT').getUnixTime(),
+    new Date('Sun, 18 Mar 2018 00:00:01 GMT').getUnixTime(),
     // Fourth week.
-    new Date('Sat, 3 Mar 2018 00:00:01 GMT').getUnixTime()
+    new Date('Sun, 25 Mar 2018 00:00:01 GMT').getUnixTime()
 ];
 
 contract('WealthECrowdsale', (accounts) => {
@@ -1220,7 +1220,7 @@ contract('WealthECrowdsale', (accounts) => {
 
         // Confirm token allocation took place.
         const tokenBalance = await token.balanceOf(accounts[6]);
-        assert.strictEqual(parseInt(fromWei(tokenBalance)), globalPresaleMinETH * (presaleBonuses[0]) * 3 * globalRate);
+        assert.strictEqual(parseInt(fromWei(tokenBalance)), (globalPresaleMinETH * presaleBonuses[0]) * 3 * globalRate);
 
         // Permitted should be 0 ETH.
         whitelistPermitted = await crowdsale.whitelistPermittedAmount(accounts[6]);
@@ -1324,7 +1324,7 @@ contract('WealthECrowdsale', (accounts) => {
 
         // Confirm second token allocation did not take place.
         const tokenBalance = await token.balanceOf(accounts[6]);
-        assert.strictEqual(fromWei(tokenBalance).toNumber(), localRate * globalPresaleMinETH * 2 * presaleBonuses[0]);
+        assert.strictEqual(parseInt(fromWei(tokenBalance).toNumber()), parseInt(localRate * globalPresaleMinETH * 2 * presaleBonuses[0]));
 
         // Permitted should be globalPresaleMinETH ETH.
         whitelistPermitted = await crowdsale.whitelistPermittedAmount(accounts[6]);
@@ -1399,7 +1399,7 @@ contract('WealthECrowdsale', (accounts) => {
         );
 
         const tokenBalance_2 = await token.balanceOf(accounts[9]);
-        assert.strictEqual(fromWei(tokenBalance_2).toNumber(), presaleBonuseThresholds[2] * presaleBonuses[2] * globalRate);
+        assert.strictEqual(Math.round(fromWei(tokenBalance_2).toNumber()), Math.round(presaleBonuseThresholds[2] * presaleBonuses[2] * globalRate));
 
     });
 

@@ -18,7 +18,7 @@ contract WealthECrowdsale is Pausable {
     uint256 public constant PUBLIC_START_TIME = 1520121600;                    // Mar. 4, 2018 12:00am GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
     uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
-    uint256 public constant MINIMUM_PRESALE_CONTRIBUTION = 41 ether;           // Minimum ETH contribution of 71.
+    uint256 public constant MINIMUM_PRESALE_CONTRIBUTION = 41 ether;           // Minimum Public Presale ETH contribution of 41.
 
 
     /*----------- Global Variables -----------*/
@@ -457,14 +457,14 @@ contract WealthECrowdsale is Pausable {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
 
-        if (_wei >= 357 ether) {
-            // 45% for 357 ETH or more.
+        if (_wei >= 208 ether) {
+            // 45% for 208 ETH or more.
             bonus = _wei.mul(45).mul(twoDigitPercent).div(GRAINS);
-        } else if (_wei >= 143 ether) {
-            // 40% for 143 ETH or more.
+        } else if (_wei >= 83 ether) {
+            // 40% for 83 ETH or more.
             bonus = _wei.mul(40).mul(twoDigitPercent).div(GRAINS);
-        } else if (_wei >= 71 ether) {
-            // 35% for 71 ETH or more.
+        } else if (_wei >= 41 ether) {
+            // 35% for 41 ETH or more.
             bonus = _wei.mul(35).mul(twoDigitPercent).div(GRAINS);
         }
 
