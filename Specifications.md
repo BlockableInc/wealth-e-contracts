@@ -29,15 +29,17 @@ Fixed supply (revoke minting ability after crowdsale).
 # Crowdsale Contract
 
 The crowdsale contract is for the presale and full public sale.
-The presale will last until February 10th or until the equivalent of $10 million in ETH is raised.
-The full public sale will end March 31st or when the equivalent of $30 million in ETH is raised.
+The presale will last until March 4th or until the equivalent of $10 million in ETH is raised.
+The full public sale will end April 30th or when the equivalent of $30 million in ETH is raised.
 
 
 ## Key Dates
 
-Public sale start: January 10, 2018 12:00am GMT
+Public presale start:  February 1, 2018 12:00am GMT
 
-Public sale end: March 31, 2018 12:00am GMT
+Full public sale start: March 4, 2018 12:00am GMT
+
+Full public sale end: April 30, 2018 12:00am GMT
 
 Owner is permitted to close the sale early.
 
@@ -108,33 +110,33 @@ Tokens are distributed as each contribution takes place. However, tokens are to 
 
 ## Rates
 
-Initial price to be the ETH equivalent of USD $0.10. Test cases assume $700 USD per ETH.
+Initial price to be the ETH equivalent of USD $0.10. Test cases assume $1200 USD per ETH.
 
-Initial rate is 7000 WRE per ETH.
+Initial rate is 12,000 WRE per ETH.
 
 
 ### Presale Bonuses:
 
-Based on USD bonus tiers when ETH/USD is $700.
+Based on USD bonus tiers when ETH/USD is $1200.
 
 Fixed bonuses based in ETH to allow for hardcoding into the smart contract.
 
 ETH equivalents below rounded to nearest ETH.
 
-Minimum: `71 ETH (~$50K USD)`
+Minimum: `41 ETH (~$50K USD)`
 
 - [x] test coverage complete
 
 
 #### Bonus tiers
 
-  - if spend >= $250K (357 ETH): 45%
-  - if spend >= $100K (143 ETH): 40%
-  - if spend >= $50K (71): 35%
+  - if spend >= $250K (208 ETH): 45%
+  - if spend >= $100K (83 ETH): 40%
+  - if spend >= $50K (41): 35%
   - if spend < $50k: 0%
 
 
-~Note: Individual hardcap of up to `14,285 ETH (~$10M)`. (To be handled manually by whitelistDefault setter.)~
+~Note: Individual hardcap of up to `25,000 ETH (~$10M)`. (To be handled manually by whitelistDefault setter.)~
 
 Note: Due to integer rounding, calculations are accurate to within 1 wei (0.000000000000000001 ETH)
 
