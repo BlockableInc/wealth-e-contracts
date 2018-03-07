@@ -36,21 +36,23 @@ const presaleBonuseThresholds = [globalPresaleMinETH, 83, 208];
 const startTime = new Date('Thurs, 1 Feb 2018 00:00:00 GMT').getUnixTime();
 const publicStartTime = new Date('Sun, 4 Mar 2018 00:00:00 GMT').getUnixTime();;
 const endTime = new Date('Mon, 30 Apr 2018 00:00:00 GMT').getUnixTime();
+
+
 const fullSaleDates = [
     // First hour.
     publicStartTime,
     // First day.
-    new Date('Sun, 4 Mar 2018 02:00:01 GMT').getUnixTime(),
+    publicStartTime + 7200,
     // First 2 - 4 days.
-    new Date('Tues, 6 Mar 2018 00:00:01 GMT').getUnixTime(),
-    // First week.
-    new Date('Fri, 9 Mar 2018 00:00:01 GMT').getUnixTime(),
-    // Second week.
-    new Date('Sun, 11 Mar 2018 00:00:01 GMT').getUnixTime(),
+    publicStartTime + 172801,
+    // First week (+ 5 days).
+    publicStartTime + 432001,
+    // Second week (+ 7 days).
+    publicStartTime +  604801,
     // Third week.
-    new Date('Sun, 18 Mar 2018 00:00:01 GMT').getUnixTime(),
+    publicStartTime + 1209601,
     // Fourth week.
-    new Date('Sun, 25 Mar 2018 00:00:01 GMT').getUnixTime()
+    publicStartTime + 1814401
 ];
 
 contract('WealthECrowdsale', (accounts) => {
