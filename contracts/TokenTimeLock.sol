@@ -51,8 +51,8 @@ contract TokenTimelock is Claimable {
     }
 
     /**
-    * @notice Transfers tokens held by timelock to beneficiary.
-    */
+     * @notice Transfers tokens held by timelock to beneficiary.
+     */
     function release() public {
         require(now >= releaseTime);
 
