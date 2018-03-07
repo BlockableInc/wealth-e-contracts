@@ -4,7 +4,7 @@ pragma solidity ^0.4.18;
 import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import './WealthE.sol';
-
+import 'TokenTimeLock';
 
 contract WealthECrowdsale is Pausable {
 
@@ -34,6 +34,10 @@ contract WealthECrowdsale is Pausable {
     uint256 public presaleCap;
     bool public presaleCapSet = false;
 
+    // TimeLock address.
+    address public timeLockAddress;
+    bool public timeLockAddressSet = false;
+
     // Cumulative tracking variable.
     uint256 public weiRaised;
     uint256 public tokensDistributed;
@@ -62,7 +66,7 @@ contract WealthECrowdsale is Pausable {
     /*----------- Interfaces -----------*/
 
     WealthE public token;
-
+    TokenTimeLock public tokenTimeLock;
 
     /*----------- Events -----------*/
 
@@ -138,6 +142,16 @@ contract WealthECrowdsale is Pausable {
     }
 
 
+    /**
+     *
+     * @dev Ensures the token timeLock address is set.
+     *
+     */
+    modifier timeLockAddressIsSet() {
+        require(timeLockAddressSet);
+        _;
+    }
+
     /*----------- Owner: Variable Setters -----------*/
 
     /**
@@ -196,6 +210,20 @@ contract WealthECrowdsale is Pausable {
         presaleCap = _cap;
     }
 
+    /**
+     * @dev Allows owner to set the timeLock address.
+     *      The cap can only be set one time.
+     * @param _timeLockAddress The address of the token timeLock contract.
+     */
+    function setTimeLockAddress(address _timeLockAddress) public onlyOwner {
+        require(!timeLockAddressSet);
+        require(_timeLockAddress != address(0));
+        require(_timeLockAddress != address(this));
+
+        timeLockAddressSet = true;
+        timeLockAddress = _timeLockAddress;
+        tokenTimeLock = TokenTimeLock(_timeLockAddress);
+    }
 
     /**
      * @dev Allows owner to set the default cap for whitelisted
@@ -209,13 +237,20 @@ contract WealthECrowdsale is Pausable {
     }
 
 
-    /*----------- Owner: Claim Token -----------*/
+    /*----------- Owner: Claim Token & TimeLock -----------*/
 
     /**
      * @dev Claim ownership of claimable token.
      */
     function claimTokenOwnership() public onlyOwner {
         token.claimOwnership();
+    }
+
+    /**
+     * @dev Claim ownership of claimable timeLock.
+     */
+    function claimTimeLockOwnership() public onlyOwner {
+        tokenTimeLock.claimOwnership();
     }
 
 
@@ -229,6 +264,7 @@ contract WealthECrowdsale is Pausable {
     function mintPresaleTokens(address _address, uint256 _tokenAmount)
         public
         onlyOwner
+        timeLockAddressIsSet
         returns (bool)
     {
         require(_address != address(0));
@@ -238,7 +274,9 @@ contract WealthECrowdsale is Pausable {
         tokensDistributed = tokensDistributed.add(_tokenAmount);
         require(tokensDistributed <= TOTAL_SALE_TOKENS);
 
-        require(token.mint(_address, _tokenAmount));
+        // Send tokens to TimeLock contract and then register address as beneficiary there.
+        require(token.mint(timeLockAddress, _tokenAmount));
+        tokenTimeLock.depositTokens(_address, _tokenAmount);
 
         return true;
     }
