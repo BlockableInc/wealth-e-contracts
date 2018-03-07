@@ -34,8 +34,8 @@ const presaleBonuses = [1.35, 1.4, 1.45];
 const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 const presaleBonuseThresholds = [globalPresaleMinETH, 83, 208];
 const startTime = new Date('Thurs, 1 Feb 2018 00:00:00 GMT').getUnixTime();
-const publicStartTime = new Date('Sun, 4 Mar 2018 00:00:00 GMT').getUnixTime();;
-const endTime = new Date('Mon, 30 Apr 2018 00:00:00 GMT').getUnixTime();
+const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();;
+const endTime = new Date('Mon, 21 May 2018 00:00:00 GMT').getUnixTime();
 
 
 const fullSaleDates = [
