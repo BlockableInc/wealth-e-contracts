@@ -140,7 +140,7 @@ Minimum: `41 ETH (~$50K USD)`
 
 Note: Due to integer rounding, calculations are accurate to within 1 wei (0.000000000000000001 ETH)
 
-- [x] test coverage complete
+- [ ] test coverage complete
 
 
 ### Full Sale Bonuses
@@ -154,10 +154,13 @@ Note: Due to integer rounding, calculations are accurate to within 1 wei (0.0000
 7. Week 4: 0%
 
 
-- [x] test coverage complete
+- [ ] test coverage complete
 
 ## Finalize
 
 Transfer ownership back to owner.
 
 - [x] test coverage complete
+
+
+TODO: vault, manual presale, bonsues
