@@ -37,13 +37,13 @@ The full public sale will end April 30th or when the equivalent of $30 million i
 
 Public presale start:  February 1, 2018 12:00am GMT
 
-Full public sale start: March 4, 2018 12:00am GMT
+Full public sale start: Wednesday, April 4, 2018 12:00:00 AM GMT
 
-Full public sale end: April 30, 2018 12:00am GMT
+Full public sale end: Monday, May 21, 2018 12:00:00 AM GMT
 
 Owner is permitted to close the sale early.
 
-- [x] test coverage complete
+- [ ] test coverage complete
 
 
 ## Crowdsale Methods
