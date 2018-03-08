@@ -18,7 +18,7 @@ contract TokenTimelock is Claimable {
     ERC20Basic public token;
 
     // beneficiary of tokens after they are released
-    mapping (address => uint250) public beneficiaryMap;
+    mapping (address => uint256) public beneficiaryMap;
 
     // timestamp when token release is enabled
     uint256 public releaseTime;
@@ -35,7 +35,8 @@ contract TokenTimelock is Claimable {
     }
 
     /**
-     * @param investor Investor address
+     * @param _beneficiary address to lock tokens on bahalf of
+     * @param _amount number of tokens in GRAINS
      */
     function depositTokens(address _beneficiary, uint256 _amount)
         public
@@ -63,6 +64,6 @@ contract TokenTimelock is Claimable {
         // Proceed only of there are tokens to send.
         require(amount > 0 && token.balanceOf(this) > 0);
 
-        token.safeTransfer(beneficiary, amount);
+        token.safeTransfer(msg.sender, amount);
     }
 }

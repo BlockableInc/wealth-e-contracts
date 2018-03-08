@@ -1,10 +1,9 @@
 pragma solidity ^0.4.18;
 
-
 import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import './WealthE.sol';
-import 'TokenTimeLock';
+import './TokenTimelock.sol';
 
 contract WealthECrowdsale is Pausable {
 
@@ -34,9 +33,9 @@ contract WealthECrowdsale is Pausable {
     uint256 public presaleCap;
     bool public presaleCapSet = false;
 
-    // TimeLock address.
-    address public timeLockAddress;
-    bool public timeLockAddressSet = false;
+    // Timelock address.
+    address public timelockAddress;
+    bool public timelockAddressSet = false;
 
     // Cumulative tracking variable.
     uint256 public weiRaised;
@@ -66,7 +65,7 @@ contract WealthECrowdsale is Pausable {
     /*----------- Interfaces -----------*/
 
     WealthE public token;
-    TokenTimeLock public tokenTimeLock;
+    TokenTimelock public tokenTimelock;
 
     /*----------- Events -----------*/
 
@@ -144,11 +143,11 @@ contract WealthECrowdsale is Pausable {
 
     /**
      *
-     * @dev Ensures the token timeLock address is set.
+     * @dev Ensures the token timelock address is set.
      *
      */
-    modifier timeLockAddressIsSet() {
-        require(timeLockAddressSet);
+    modifier timelockAddressIsSet() {
+        require(timelockAddressSet);
         _;
     }
 
@@ -211,18 +210,18 @@ contract WealthECrowdsale is Pausable {
     }
 
     /**
-     * @dev Allows owner to set the timeLock address.
+     * @dev Allows owner to set the timelock address.
      *      The cap can only be set one time.
-     * @param _timeLockAddress The address of the token timeLock contract.
+     * @param _timelockAddress The address of the token timelock contract.
      */
-    function setTimeLockAddress(address _timeLockAddress) public onlyOwner {
-        require(!timeLockAddressSet);
-        require(_timeLockAddress != address(0));
-        require(_timeLockAddress != address(this));
+    function setTimelockAddress(address _timelockAddress) public onlyOwner {
+        require(!timelockAddressSet);
+        require(_timelockAddress != address(0));
+        require(_timelockAddress != address(this));
 
-        timeLockAddressSet = true;
-        timeLockAddress = _timeLockAddress;
-        tokenTimeLock = TokenTimeLock(_timeLockAddress);
+        timelockAddressSet = true;
+        timelockAddress = _timelockAddress;
+        tokenTimelock = TokenTimelock(_timelockAddress);
     }
 
     /**
@@ -237,7 +236,7 @@ contract WealthECrowdsale is Pausable {
     }
 
 
-    /*----------- Owner: Claim Token & TimeLock -----------*/
+    /*----------- Owner: Claim Token & Timelock -----------*/
 
     /**
      * @dev Claim ownership of claimable token.
@@ -247,10 +246,10 @@ contract WealthECrowdsale is Pausable {
     }
 
     /**
-     * @dev Claim ownership of claimable timeLock.
+     * @dev Claim ownership of claimable timelock.
      */
-    function claimTimeLockOwnership() public onlyOwner {
-        tokenTimeLock.claimOwnership();
+    function claimTimelockOwnership() public onlyOwner {
+        tokenTimelock.claimOwnership();
     }
 
 
@@ -264,7 +263,7 @@ contract WealthECrowdsale is Pausable {
     function mintPresaleTokens(address _address, uint256 _tokenAmount)
         public
         onlyOwner
-        timeLockAddressIsSet
+        timelockAddressIsSet
         returns (bool)
     {
         require(_address != address(0));
@@ -274,9 +273,9 @@ contract WealthECrowdsale is Pausable {
         tokensDistributed = tokensDistributed.add(_tokenAmount);
         require(tokensDistributed <= TOTAL_SALE_TOKENS);
 
-        // Send tokens to TimeLock contract and then register address as beneficiary there.
-        require(token.mint(timeLockAddress, _tokenAmount));
-        tokenTimeLock.depositTokens(_address, _tokenAmount);
+        // Send tokens to Timelock contract and then register address as beneficiary there.
+        require(token.mint(timelockAddress, _tokenAmount));
+        tokenTimelock.depositTokens(_address, _tokenAmount);
 
         return true;
     }
