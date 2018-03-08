@@ -21,17 +21,15 @@ contract TokenTimelock is Claimable {
     mapping (address => uint256) public beneficiaryMap;
 
     // timestamp when token release is enabled
-    uint256 public releaseTime;
+    uint256 public releaseTime = 1542758400; // Wednesday, November 21, 2018 12:00:00 AM
 
     // tokens deposited.
     uint256 tokenBalance;
 
-    function TokenTimelock(ERC20Basic _token, uint256 _releaseTime)
+    function TokenTimelock(ERC20Basic _token)
         public
     {
-        require(_releaseTime > now);
         token = _token;
-        releaseTime = _releaseTime;
     }
 
     /**
