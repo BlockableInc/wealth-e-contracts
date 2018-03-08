@@ -88,7 +88,9 @@ contract WealthECrowdsale is Pausable {
 
     /*----------- Constructor -----------*/
 
-    function WealthECrowdsale(WealthE _token) {
+    function WealthECrowdsale(WealthE _token)
+        public
+    {
         require(_token != WealthE(0));
 
         token = _token;
@@ -489,7 +491,7 @@ contract WealthECrowdsale is Pausable {
      * @dev Determines bonus in terms of wei.
      * @param _wei amount of wei contributed.
      */
-    function presaleBonusWei(uint256 _wei) public view returns (uint256) {
+    function presaleBonusWei(uint256 _wei) public pure returns (uint256) {
         uint256 bonus = 0;
         uint256 twoDigitPercent = 10 ** 16;
 
