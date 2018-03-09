@@ -603,7 +603,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm no token transfer took place.
             const endingBalance = await token.balanceOf(timelock.address);
-            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 100);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
 
             const tokenBalance_0 = await timelock.beneficiaryMap.call(batchAddresses[0]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 0);
@@ -625,66 +625,70 @@ contract('WealthECrowdsale', (accounts) => {
     
         it('Batch Presale: it should fail if array lengths do not match', async () => {
     
+            const startingBalance = await token.balanceOf(timelock.address);
+
             await assertRevert(crowdsale.mintPresaleTokensBatch(
                 batchAddresses.slice(0,4),
                 batchAmounts,
                 { from: owner }
             ));
 
-            await assertRevert(await crowdsale.mintPresaleTokensBatch(
+            await assertRevert(crowdsale.mintPresaleTokensBatch(
                 batchAddresses,
                 batchAmounts.slice(0,4),
                 { from: owner }
             ));
 
-            asdasd
             // Confirm no token transfer took place.
-            const tokenBalance_0 = await token.balanceOf(batchAddresses[0]);
+            const endingBalance = await token.balanceOf(timelock.address);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
+
+            const tokenBalance_0 = await timelock.beneficiaryMap.call(batchAddresses[0]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 0);
     
-            const tokenBalance_1 = await token.balanceOf(batchAddresses[1]);
+            const tokenBalance_1 = await timelock.beneficiaryMap.call(batchAddresses[1]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 0);
     
-            const tokenBalance_2 = await token.balanceOf(batchAddresses[2]);
+            const tokenBalance_2 = await timelock.beneficiaryMap.call(batchAddresses[2]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 0);
     
-            const tokenBalance_3 = await token.balanceOf(batchAddresses[3]);
+            const tokenBalance_3 = await timelock.beneficiaryMap.call(batchAddresses[3]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 0);
     
-            const tokenBalance_4 = await token.balanceOf(batchAddresses[4]);
+            const tokenBalance_4 = await timelock.beneficiaryMap.call(batchAddresses[4]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_4)), 0);
     
         });
     
     
         it('Batch Presale: it should fail if array lengths are 0', async () => {
-    
-            try {
-                await crowdsale.mintPresaleTokensBatch(
-                    [],
-                    [],
-                    { from: owner }
-                );
-            } catch (error) {
-                assertError(error);
-            }
-    
+
+            const startingBalance = await token.balanceOf(timelock.address);
+
+            await assertRevert(crowdsale.mintPresaleTokensBatch(
+                [],
+                [],
+                { from: owner }
+            ));
     
     
             // Confirm no token transfer took place.
-            const tokenBalance_0 = await token.balanceOf(batchAddresses[0]);
+            const endingBalance = await token.balanceOf(timelock.address);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
+
+            const tokenBalance_0 = await timelock.beneficiaryMap.call(batchAddresses[0]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 0);
     
-            const tokenBalance_1 = await token.balanceOf(batchAddresses[1]);
+            const tokenBalance_1 = await timelock.beneficiaryMap.call(batchAddresses[1]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 0);
     
-            const tokenBalance_2 = await token.balanceOf(batchAddresses[2]);
+            const tokenBalance_2 = await timelock.beneficiaryMap.call(batchAddresses[2]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 0);
     
-            const tokenBalance_3 = await token.balanceOf(batchAddresses[3]);
+            const tokenBalance_3 = await timelock.beneficiaryMap.call(batchAddresses[3]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 0);
     
-            const tokenBalance_4 = await token.balanceOf(batchAddresses[4]);
+            const tokenBalance_4 = await timelock.beneficiaryMap.call(batchAddresses[4]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_4)), 0);
     
         });
@@ -692,39 +696,41 @@ contract('WealthECrowdsale', (accounts) => {
     
         it('Batch Presale: it should fail surpasses TOTAL_SALE_TOKENS', async () => {
     
-            try {
-                await crowdsale.mintPresaleTokensBatch(
-                    batchAddresses,
-                    [100 * million, 50 * million, 50 * million, 50 * million, 51 * million].map(x => toWei(x)),
-                    { from: owner }
-                );
-            } catch (error) {
-                assertError(error);
-            }
-    
+            const startingBalance = await token.balanceOf(timelock.address);
+
+            await assertRevert(crowdsale.mintPresaleTokensBatch(
+                batchAddresses,
+                [100 * million, 50 * million, 50 * million, 50 * million, 51 * million].map(x => toWei(x)),
+                { from: owner }
+            ));    
     
     
             // Confirm no token transfer took place.
-            const tokenBalance_0 = await token.balanceOf(batchAddresses[0]);
+            const endingBalance = await token.balanceOf(timelock.address);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
+
+            const tokenBalance_0 = await timelock.beneficiaryMap.call(batchAddresses[0]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 0);
     
-            const tokenBalance_1 = await token.balanceOf(batchAddresses[1]);
+            const tokenBalance_1 = await timelock.beneficiaryMap.call(batchAddresses[1]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 0);
     
-            const tokenBalance_2 = await token.balanceOf(batchAddresses[2]);
+            const tokenBalance_2 = await timelock.beneficiaryMap.call(batchAddresses[2]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 0);
     
-            const tokenBalance_3 = await token.balanceOf(batchAddresses[3]);
+            const tokenBalance_3 = await timelock.beneficiaryMap.call(batchAddresses[3]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 0);
     
-            const tokenBalance_4 = await token.balanceOf(batchAddresses[4]);
+            const tokenBalance_4 = await timelock.beneficiaryMap.call(batchAddresses[4]);
             assert.strictEqual(parseInt(fromWei(tokenBalance_4)), 0);
-    
+
         });
     
     
         it('Batch Presale: it should conduct multiple transfers', async () => {
     
+            const startingBalance = await token.balanceOf(timelock.address);
+
             await crowdsale.mintPresaleTokensBatch(
                 batchAddresses,
                 batchAmounts,
@@ -732,21 +738,24 @@ contract('WealthECrowdsale', (accounts) => {
             );
     
             // Confirm token transfer took place.
-            const tokenBalance_0 = await token.balanceOf(batchAddresses[0]);
-            // using to number as batchAmounts was set to simply 1 (not 1 converted to grains).
-            assert.strictEqual(tokenBalance_0.toNumber(), 1);
+            const endingBalance = await token.balanceOf(timelock.address);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 140);            
+            
+            // using toNumber as batchAmounts was set to simply 1 (not 1 converted to grains).
+            const tokensOwed_0 = await timelock.beneficiaryMap.call(batchAddresses[0]);
+            assert.strictEqual(tokensOwed_0.toNumber(), 1);
     
-            const tokenBalance_1 = await token.balanceOf(batchAddresses[1]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 20);
-    
-            const tokenBalance_2 = await token.balanceOf(batchAddresses[2]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 30);
-    
-            const tokenBalance_3 = await token.balanceOf(batchAddresses[3]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 40);
-    
-            const tokenBalance_4 = await token.balanceOf(batchAddresses[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance_4)), 50);
+            const tokensOwed_1 = await timelock.beneficiaryMap.call(batchAddresses[1]);
+            assert.strictEqual(parseInt(fromWei(tokensOwed_1)), 20);
+
+            const tokensOwed_2 = await timelock.beneficiaryMap.call(batchAddresses[2]);
+            assert.strictEqual(parseInt(fromWei(tokensOwed_2)), 30);
+
+            const tokensOwed_3 = await timelock.beneficiaryMap.call(batchAddresses[3]);
+            assert.strictEqual(parseInt(fromWei(tokensOwed_3)), 40);
+
+            const tokensOwed_4 = await timelock.beneficiaryMap.call(batchAddresses[4]);
+            assert.strictEqual(parseInt(fromWei(tokensOwed_4)), 50);
     
         });
     });
