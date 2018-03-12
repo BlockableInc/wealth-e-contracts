@@ -36,23 +36,28 @@ const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();
 const endTime = new Date('Mon, 21 May 2018 00:00:00 GMT').getUnixTime();
 
+let newStartTime = new Date().getUnixTime();
 
-const fullSaleDates = [
-    // First hour.
-    publicStartTime,
-    // First day.
-    publicStartTime + 7200,
-    // First 2 - 4 days.
-    publicStartTime + 172801,
-    // First week (+ 5 days).
-    publicStartTime + 432001,
-    // Second week (+ 7 days).
-    publicStartTime +  604801,
-    // Third week.
-    publicStartTime + 1209601,
-    // Fourth week.
-    publicStartTime + 1814401
-];
+const getBonusDates = (d) => {
+    return [
+        // First hour.
+        d,
+        // First day.
+        d + 7200,
+        // First 2 - 4 days.
+        d + 172801,
+        // First week (+ 5 days).
+        d + 432001,
+        // Second week (+ 7 days).
+        d +  604801,
+        // Fourth week.
+        d + 1814401,
+        // Sixth week.
+        d + 3628801
+    ];
+};
+
+const fullSaleDates = getBonusDates(publicStartTime);
 
 contract('WealthECrowdsale', (accounts) => {
 
@@ -757,7 +762,7 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setRate(1, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
             
-            const earlyTime = crowdsale.setSaleStart(new Date('Thurs, 8 March 2018 00:00:00 GMT').getUnixTime(), { from: owner });
+            crowdsale.setSaleStart(new Date().getUnixTime(), { from: owner });
     
             // Use default whitelist cap.
             await crowdsale.setDefaultWhitelistCap(
@@ -782,7 +787,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             const tokenBalance_0 = await token.balanceOf(accounts[5]);
-            assert.strictEqual(fromWei(tokenBalance_0).toNumber(), globalPresaleMinETH * (fullsaleBonuses[6]) * 1);
+            assert.strictEqual(+(fromWei(tokenBalance_0).toNumber()).toFixed(1), +(globalPresaleMinETH * (fullsaleBonuses[6])).toFixed(1));
  
         });
     
@@ -943,7 +948,7 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-    
+            
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
                 accounts[4],
@@ -983,7 +988,7 @@ contract('WealthECrowdsale', (accounts) => {
             const msAddress = await crowdsale.multiSig();
             const balance = await web3.eth.getBalance(multiSig);
     
-            assert.strictEqual(parseInt(fromWei(balance)), globalPresaleMinETH);
+            assert.strictEqual(parseInt(fromWei(balance)), globalPresaleMinETH * 2);
         });
     
     
@@ -1416,20 +1421,20 @@ contract('WealthECrowdsale', (accounts) => {
 
             token = await WealthE.new({ from: owner });
             crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
-    
+
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-    
+
             // Use default whitelist cap.
             await crowdsale.setDefaultWhitelistCap(
                 toWei(30303),
                 { from: owner }
             );
-    
+
             // Add to whitelist.
             await crowdsale.setWhitelistAddressBatch(
                 [
@@ -1445,10 +1450,6 @@ contract('WealthECrowdsale', (accounts) => {
                 [1, 1, 1, 1, 1, 1, 1, 1],
                 { from: owner }
             );
-    
-    
-            await increaseTimeTo(fullSaleDates[0]);
-            assert.isFalse(await crowdsale.duringPresale());
     
             // Complete purchases at each time interval.
             await web3.eth.sendTransaction({
@@ -1511,7 +1512,6 @@ contract('WealthECrowdsale', (accounts) => {
                 gas: 200000,
                 value: toWei(2)
             });
-    
     
     
             // Confirm token allocation took place.
@@ -1643,12 +1643,12 @@ contract('WealthECrowdsale', (accounts) => {
 
     describe('Token Paused', () => {
         it('it should fail to transfer tokens while paused', async () => {
-    
-            try {
-                await token.transfer(accounts[2], 100, { from: accounts[3] });
-            } catch (error) {
-                assertError(error);
-            }
+            
+            token = await WealthE.new({ from: owner });
+            await token.pause({ from: owner });
+            await token.mint(accounts[3], toWei(200), { from: owner })
+
+            await assertRevert(token.transfer(accounts[2], 100, { from: accounts[3] }));
     
             // Confirm no token transfer took place.
             const tokenBalance = await token.balanceOf(accounts[3]);

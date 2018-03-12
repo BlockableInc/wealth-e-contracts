@@ -11,14 +11,14 @@ module.exports = {
   networks: {
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/")
+        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/P02k0Sd9DICxikYWGSpK")
       },
       gas: 6e6,
       network_id: 3
     },
     rinkeby: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/")
+        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/P02k0Sd9DICxikYWGSpK")
       },
       gas: 6e6,
       network_id: 4

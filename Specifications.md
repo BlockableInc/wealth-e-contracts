@@ -86,6 +86,7 @@ Addresses and vesting required for reserve, team, and network growth unless hand
   - Reserve 20% (120 million WRE)
   - Team 20% (120 million WRE)
   - Network Growth 10% (60 million WRE)
+  - Bounty program 2%
 
 - [ ] test coverage complete
 
@@ -101,6 +102,12 @@ The smart contract will reject contributions from addresses not included in the 
 - [x] test coverage complete
 
 
+## Presale Token Issuance
+
+Tokens are distributed to a timelock valut as each contribution takes place. Token are availalbe for withdrawl on or after Wednesday, November 21, 2018 12:00:00 AM GMT.
+
+- [ ] test coverage complete
+
 ## Token Issuance
 
 Tokens are distributed as each contribution takes place. However, tokens are to be manually locked until the completion of the full public sale. To be manually unlocked by owner.
@@ -115,46 +122,17 @@ Initial price to be the ETH equivalent of USD $0.10. Test cases assume $1200 USD
 Initial rate is 12,000 WRE per ETH.
 
 
-### Presale Bonuses:
-
-Based on USD bonus tiers when ETH/USD is $1200.
-
-Fixed bonuses based in ETH to allow for hardcoding into the smart contract.
-
-ETH equivalents below rounded to nearest ETH.
-
-Minimum: `41 ETH (~$50K USD)`
-
-- [x] test coverage complete
-
-
-#### Bonus tiers
-
-  - if spend >= $250K (208 ETH): 45%
-  - if spend >= $100K (83 ETH): 40%
-  - if spend >= $50K (41): 35%
-  - if spend < $50k: 0%
-
-
-~Note: Individual hardcap of up to `25,000 ETH (~$10M)`. (To be handled manually by whitelistDefault setter.)~
-
-Note: Due to integer rounding, calculations are accurate to within 1 wei (0.000000000000000001 ETH)
-
-- [ ] test coverage complete
-
-
 ### Full Sale Bonuses
 
 1. Hour 1: 30%
 2. Day 1: 25%
 3. Day 2-4: 20%
 4. Week 1: 15%
-5. Week 2: 10%
-6. Week 3: 5%
-7. Week 4: 0%
+5. Week 2-3: 10%
+6. Week 4-5: 5%
+7. Week 6: 0%
 
-
-- [ ] test coverage complete
+- [x] test coverage complete
 
 ## Finalize
 

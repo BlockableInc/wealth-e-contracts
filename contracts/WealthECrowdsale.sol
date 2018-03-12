@@ -377,11 +377,11 @@ contract WealthECrowdsale is Pausable {
         } else if (now <= fullSaleStart + 1 weeks) {
             // 15% within fist week.
             bonus = _wei.mul(15).mul(twoDigitPercent).div(GRAINS);
-        } else if (now <= fullSaleStart + 2 weeks) {
-            // 10% within first 2 weeks.
-            bonus = _wei.mul(10).mul(twoDigitPercent).div(GRAINS);
         } else if (now <= fullSaleStart + 3 weeks) {
-            // 5% within first 3 weeks.
+            // 10% within first 3 weeks.
+            bonus = _wei.mul(10).mul(twoDigitPercent).div(GRAINS);
+        } else if (now <= fullSaleStart + 5 weeks) {
+            // 5% within first 5 weeks.
             bonus = _wei.mul(5).mul(twoDigitPercent).div(GRAINS);
         }
 
