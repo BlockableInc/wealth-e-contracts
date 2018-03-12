@@ -29,8 +29,8 @@ Fixed supply (revoke minting ability after crowdsale).
 # Crowdsale Contract
 
 The crowdsale contract is for the presale and full public sale.
-The presale will last until March 4th or until the equivalent of $10 million in ETH is raised.
-The full public sale will end April 30th or when the equivalent of $30 million in ETH is raised.
+Presale tokens are distributed manully by the contract owner.
+The full public sale exchanges tokens for ETH.
 
 
 ## Key Dates
@@ -43,7 +43,7 @@ Full public sale end: Monday, May 21, 2018 12:00:00 AM GMT
 
 Owner is permitted to close the sale early.
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 
 ## Crowdsale Methods
@@ -106,7 +106,7 @@ The smart contract will reject contributions from addresses not included in the 
 
 Tokens are distributed to a timelock valut as each contribution takes place. Token are availalbe for withdrawl on or after Wednesday, November 21, 2018 12:00:00 AM GMT.
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 ## Token Issuance
 
@@ -139,6 +139,3 @@ Initial rate is 12,000 WRE per ETH.
 Transfer ownership back to owner.
 
 - [x] test coverage complete
-
-
-TODO: vault, manual presale, bonsues
