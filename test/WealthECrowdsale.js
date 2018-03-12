@@ -35,6 +35,7 @@ const globalPresaleMinETH = 41;
 const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();
 const endTime = new Date('Mon, 21 May 2018 00:00:00 GMT').getUnixTime();
+const timelockRelease = new Date('Wed 21 Nov 2018 00:00:00 GMT').getUnixTime();
 
 let newStartTime = new Date().getUnixTime();
 
@@ -1656,4 +1657,76 @@ contract('WealthECrowdsale', (accounts) => {
     
         });
     });
+
+    
+    /*----------  Timelock Release  ----------*/
+
+    describe('Timelock Release', () => {
+        let timelock;
+
+        before(async () => {
+
+            token = await WealthE.new({ from: owner });
+            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
+            timelock = await TimelockArtifact.new(token.address, { from: owner });
+
+            await token.setupReclaim({ from: owner });
+            await token.transferOwnership(crowdsale.address, { from: owner });
+            await timelock.transferOwnership(crowdsale.address, { from: owner });
+            await crowdsale.claimTokenOwnership({ from: owner });
+            await crowdsale.setTimelockAddress(timelock.address, { from: owner });
+            await crowdsale.claimTimelockOwnership({ from: owner });
+            assert.isTrue(await crowdsale.timelockAddressSet());
+            await crowdsale.mintPresaleTokens(accounts[2], toWei(100), { from: owner });
+            await crowdsale.mintPresaleTokens(accounts[4], toWei(1000), { from: owner });
+            await crowdsale.mintPresaleTokens(accounts[5], toWei(100000), { from: owner });
+            await crowdsale.mintPresaleTokens(accounts[6], toWei(100000000), { from: owner });
+        });
+
+        it('it should fail to release tokens prior to release date', async () => {
+            await assertRevert(timelock.release({ from: accounts[2] }));
+    
+            // Confirm no token transfer took place.
+            const tokenBalance = await token.balanceOf(accounts[2]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
+        });
+
+        it('it should fail to release tokens if none owed', async () => {
+
+            await increaseTimeTo(timelockRelease);
+
+            await assertRevert(timelock.release({ from: accounts[3] }));
+    
+            // Confirm no token transfer took place.
+            const tokenBalance = await token.balanceOf(accounts[3]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
+        });
+
+        it('it should release tokens owed only once', async () => {
+            await timelock.release({ from: accounts[2] });
+            await timelock.release({ from: accounts[4] });
+            await timelock.release({ from: accounts[5] });
+            await timelock.release({ from: accounts[6] });
+    
+            // Confirm no token transfer took place.
+            const tokenBalance_0 = await token.balanceOf(accounts[2]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 100);
+
+            const tokenBalance_1 = await token.balanceOf(accounts[4]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 1000);
+
+            const tokenBalance_2 = await token.balanceOf(accounts[5]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance_2)), 100000);
+
+            const tokenBalance_3 = await token.balanceOf(accounts[6]);
+            assert.strictEqual(parseInt(fromWei(tokenBalance_3)), 100000000);
+
+            await assertRevert(timelock.release({ from: accounts[2] }));
+            await assertRevert(timelock.release({ from: accounts[4] }));
+            await assertRevert(timelock.release({ from: accounts[5] }));
+            await assertRevert(timelock.release({ from: accounts[6] }));
+        });
+    });
+    
+    
 });
