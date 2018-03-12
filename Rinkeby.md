@@ -1,24 +1,22 @@
 ```
-Using network 'rinkeby'.
-
 Running migration: 1_initial_migration.js
   Deploying Migrations...
-  ... 0x53bd35496871271db1ca55c1a5151de7be11cb049aa1d49cf9251f3c9dabbfe5
-  Migrations: 0x63052460a993bd4b9688d432d8ae4ac59e7dac17
+  ... 0x8f39a70fac23727ae274fdaf062d5fa9274dbce15e3c959dde5de6bf48d80265
+  Migrations: 0x855fde7ddfd2683e24b2590f2166b99fd87be108
 Saving successful migration to network...
-  ... 0xd89a354e4aec2a00c5a0fbed3b7a25af8d65b2316da223ae7a835c28df3284ad
+  ... 0xff442e738bfd39ef8ff37a2747a0bb7285e30eb50ce8fbeed93b8f98bff96a04
 Saving artifacts...
 Running migration: 2_wealthE_migrations.js
   Deploying WealthE...
-  ... 0x2b53b46f481b77518d4153911ec647eb42abe1c12e7b1c19903b5beafcad8d1c
-  WealthE: 0xfe8c362f0486f5e544357570d7266e62abee39d4
+  ... 0xd75882823b235570bd4235ea755cc2060f2d55ba539e424a2b05bc83e7bfa3e5
+  WealthE: 0x278a827882c03e81be827cafbb9123aba83ef1b4
 Saving successful migration to network...
   Deploying WealthECrowdsale...
   Deploying TokenTimelock...
-  ... 0x014400c09438ecc245508f73ad502c9f828c5d150254a13a8509c55780ca7f81
-  ... 0x7200dc6c58c54500eadd9a2cf20ca322510e2dc22261958b9a436210f26424f0
-  ... 0xcad820473ac9165da0c0375698eb0fc2846d1cbdaaa56018f3678d1bc0f75f8e
+  ... 0x4246035724b91e3bb9fb3707273f55b124e8ea4185fa77a5d0fc62306d10cbdb
+  ... 0x7fb9512800238ece8292b1034b7f913b8672d379534ee6ce4689ffa6923c29a4
+  ... 0xd653b06d7df953c6b09f4ca4ffc1bda4e0f9224b4b887c55eab6daec56c068a3
 Saving artifacts...
-  WealthECrowdsale: 0xdef674fb3861b35387111edef6d5fd3f895ac2bd
-  TokenTimelock: 0x5a298193b017d6167304a11a1dd3a3b1e7363e6c
-  ```
+  WealthECrowdsale: 0x78cf11c32cd9eb0657ecb5970779e6650cb2051a
+  TokenTimelock: 0xf90652948793beb8a5929fce51cf4efd594ef812
+```
