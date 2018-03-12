@@ -4,6 +4,6 @@ var TokenTimelock = artifacts.require("./TokenTimelock.sol");
 
 module.exports = async function(deployer) {
   await deployer.deploy(WealthE);
-  deployer.deploy(WealthECrowdsale, WealthE.address);
-  deployer.deploy(TokenTimelock, WealthE.address)
+  await deployer.deploy(WealthECrowdsale, WealthE.address);
+  await deployer.deploy(TokenTimelock, WealthE.address)
 };

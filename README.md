@@ -32,21 +32,28 @@ If encounter `Error: Invalid number of arguments to Solidity function` run `npm 
 
 ## Deployment steps
 
+#### Covered by truffle migrate
 
   1. Launch both the token and the crowdsale contracts to the public blockchain.
-  2. Pause token transfers.
-  3. Call `setUpReclaim` as a safeguard on the token contract.
-  3. Transfer ownership of the token to the crowdsale contract for minting purposes.
-  4. Call `claimTokenOwnership` on the crowdsale contract to complete the ownership transfer.
-  5. Launch the timelock contract.
-  6. Transfer ownership of the timelock contract to the crowdsale contract.
-  7. Set the token address on the timelock contract.
-  8. Set the timelick address on the crowdsale contract.
-  9. Set the multisig address to receive funds collected.
-  10. Set the tokens per ETH rate.
-  11. Set the sale hardcap.
-  12. Set the setDefaultWhitelistCap.
-  13. Set whitelist participant addresses and approved amounts.
+  2. Launch the timelock contract.
+
+#### Covered by initContracts.js
+
+  3. Pause token transfers.
+  4. Transfer ownership of the timelock contract to the crowdsale contract.
+  5. Claim ownership of the timelock contract on the crwodsale contract.
+  6. Set the timelock address on the crowdsale contract.
+
+#### Requires manual execution
+
+  7. Call `setUpReclaim` as a safeguard on the token contract.
+  8. Transfer ownership of the token to the crowdsale contract for minting purposes.
+  9. Call `claimTokenOwnership` on the crowdsale contract to complete the ownership transfer.
+  10. Set the multisig address to receive funds collected.
+  11. Set the tokens per ETH rate.
+  12. Set the sale hardcap.
+  13. Set the setDefaultWhitelistCap.
+  14. Set whitelist participant addresses and approved amounts.
 
 ## Finalization
 
