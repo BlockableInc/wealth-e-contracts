@@ -11,13 +11,10 @@ contract WealthECrowdsale is Pausable {
 
     /*----------- Global Constants -----------*/
 
-    uint256 public constant START_TIME = 1517443200;                           // Feb. 1, 2018 12:00am GMT crowdsale start time in seconds.
     uint256 public constant END_TIME = 1526860800;                             // Monday, May 21, 2018 12:00:00 AM GMT crowdsale end time in seconds.
     uint256 public constant PUBLIC_START_TIME = 1522800000;                    // Wednesday, April 4, 2018 12:00:00 AM GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
     uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
-    uint256 public constant MINIMUM_PRESALE_CONTRIBUTION = 41 ether;           // Minimum Public Presale ETH contribution of 41.
-
 
     /*----------- Global Variables -----------*/
 
@@ -28,10 +25,6 @@ contract WealthECrowdsale is Pausable {
     // Hardcap expressed in wei.
     uint256 public cap;
     bool public capSet = false;
-
-    // Public Presale cap expressed in wei.
-    uint256 public presaleCap;
-    bool public presaleCapSet = false;
 
     // Timelock address.
     address public timelockAddress;
@@ -47,13 +40,11 @@ contract WealthECrowdsale is Pausable {
     // Date to begin full sale.
     uint256 public fullSaleStart = PUBLIC_START_TIME;
 
-
     /*----------- Global Address Vairables -----------*/
 
     // Recipient of the ETH funds collected.
     address public multiSig;
     bool public multiSigSet = false;
-
 
     /*----------- Global Whitelist Variables -----------*/
 
@@ -61,33 +52,28 @@ contract WealthECrowdsale is Pausable {
     mapping(address => uint256) public addressWhitelistCap;
     mapping(address => uint256) public addressWhitelistUsed;
 
-
     /*----------- Interfaces -----------*/
 
     WealthE public token;
     TokenTimelock public tokenTimelock;
 
     /*----------- Events -----------*/
-
     /**
      * @dev event for token purchase logging
      * @param purchaser who paid for and received the tokens
      * @param value weis paid for purchase
      * @param amount amount of tokens purchased
      */
-    event logTokenPurchase(address indexed purchaser, uint256 value, uint256 amount);
-
+    event LogTokenPurchase(address indexed purchaser, uint256 value, uint256 amount);
 
     /**
      * @dev event for whitelist update logging
      * @param purchaser who is eligible to purchase tokens
      * @param whitelistCap individual cap set in wei
      */
-    event logWhitelistUpdate(address indexed purchaser, uint256 whitelistCap);
-
+    event LogWhitelistUpdate(address indexed purchaser, uint256 whitelistCap);
 
     /*----------- Constructor -----------*/
-
     function WealthECrowdsale(WealthE _token)
         public
     {
@@ -96,9 +82,7 @@ contract WealthECrowdsale is Pausable {
         token = _token;
     }
 
-
     /*----------- Modifiers -----------*/
-
     /**
      *
      * @dev Ensures multisig beneficiary address is set.
@@ -108,7 +92,6 @@ contract WealthECrowdsale is Pausable {
         require(multiSigSet);
         _;
     }
-
 
     /**
      *
@@ -120,7 +103,6 @@ contract WealthECrowdsale is Pausable {
         _;
     }
 
-
     /**
      *
      * @dev Ensures the ETH hardcap is set.
@@ -130,18 +112,6 @@ contract WealthECrowdsale is Pausable {
         require(capSet);
         _;
     }
-
-
-    /**
-     *
-     * @dev Ensures the ETH public presale cap is set.
-     *
-     */
-    modifier presaleCapIsSet() {
-        require(presaleCapSet);
-        _;
-    }
-
 
     /**
      *
@@ -153,7 +123,25 @@ contract WealthECrowdsale is Pausable {
         _;
     }
 
+    /*----------- Public Methods -----------*/
+    /**
+     * @dev Fallback method is the primary method for participants to interact
+     *      with the sale.
+     */
+    function () public payable {
+        buyTokens();
+    }
+
     /*----------- Owner: Variable Setters -----------*/
+    /**
+     * @dev Allows owner to move the start date ahead.
+     * @param _newStartDate New full sale start date in Unix time (seconds).
+     */
+    function setSaleStart(uint256 _newStartDate) public onlyOwner {
+        // Trigger earlt fullSaleStart.
+        require(_newStartDate < fullSaleStart && fullSaleStart > now);
+        fullSaleStart = _newStartDate;
+    }
 
     /**
      * @dev Allows owner to set the multiSig (i.e. beneficiary) address.
@@ -169,7 +157,6 @@ contract WealthECrowdsale is Pausable {
         multiSig = _multiSig;
     }
 
-
     /**
      * @dev Allows owner to set the Tokens per ETH rate (in grains per wei).
      *      To maintain trustlessness, the rate can only be set one time.
@@ -183,7 +170,6 @@ contract WealthECrowdsale is Pausable {
         rate = _rate;
     }
 
-
     /**
      * @dev Allows owner to set the hard cap (denoted in wei).
      *      To maintain trustlessness, the cap can only be set one time.
@@ -195,20 +181,6 @@ contract WealthECrowdsale is Pausable {
 
         capSet = true;
         cap = _cap;
-    }
-
-
-    /**
-     * @dev Allows owner to set the public presale cap (denoted in wei).
-     *      To maintain trustlessness, the cap can only be set one time.
-     * @param _cap The ETH public presale cap expressed in wei.
-     */
-    function setPresaleCap(uint256 _cap) public onlyOwner {
-        require(!presaleCapSet);
-        require(_cap > 0);
-
-        presaleCapSet = true;
-        presaleCap = _cap;
     }
 
     /**
@@ -237,9 +209,7 @@ contract WealthECrowdsale is Pausable {
         defaultWhitelistCap = _whitelistCap;
     }
 
-
     /*----------- Owner: Claim Token & Timelock -----------*/
-
     /**
      * @dev Claim ownership of claimable token.
      */
@@ -254,9 +224,7 @@ contract WealthECrowdsale is Pausable {
         tokenTimelock.claimOwnership();
     }
 
-
     /*----------- Owner: Presale Transfers -----------*/
-
     /**
      * @dev Send tokens to presale participants.
      * @param _address Address of token recipient.
@@ -282,7 +250,6 @@ contract WealthECrowdsale is Pausable {
         return true;
     }
 
-
     /**
      * @dev Send tokens to presale participants in batches.
      *      Be aware of transaction and block gas limits.
@@ -304,9 +271,7 @@ contract WealthECrowdsale is Pausable {
         return true;
     }
 
-
     /*----------- Owner: Whitelist -----------*/
-
     /**
      * @dev Set whitelist cap for a single purchaser.
      * @param _purchaser Address of purchaser.
@@ -319,11 +284,10 @@ contract WealthECrowdsale is Pausable {
         returns (bool)
     {
         addressWhitelistCap[_purchaser] = _whitelistCap;
-        logWhitelistUpdate(_purchaser, _whitelistCap);
+        LogWhitelistUpdate(_purchaser, _whitelistCap);
 
         return true;
     }
-
 
     /**
      * @dev Set whitelist cap for multiple purchasers.
@@ -345,16 +309,13 @@ contract WealthECrowdsale is Pausable {
         return true;
     }
 
-
     /*----------- Owner: Finalization -----------*/
-
     /**
      * @dev Owner can trigger an early end to the sale.
      */
     function endSale() public onlyOwner {
         ownerEnded = true;
     }
-
 
     /**
      * @dev Finalization method to transfer token ownership back to owner.
@@ -366,96 +327,7 @@ contract WealthECrowdsale is Pausable {
         token.transferOwnership(msg.sender);
     }
 
-
-    /*----------- Public Methods -----------*/
-
-    /**
-     * @dev Fallback method is the primary method for participants to interact
-     *      with the sale.
-     */
-    function () public payable {
-        buyTokens();
-    }
-
-
-    /**
-     * @dev Trades ETH for tokens.
-     *      Modified from zeppelin-solidity implementation to restrict purchases
-     *      to KYC list, to handle bonuses, and track tokens distributed.
-     */
-    function buyTokens()
-        internal
-        multiSigIsSet
-        capIsSet
-        presaleCapIsSet
-        rateIsSet
-        whenNotPaused
-        returns (bool)
-    {
-        require(validPurchase());
-
-        // Check if durring presale.
-        bool presalePurchase = duringPresale();
-
-        // Check whitelist for permitted contribution amount.
-        uint256 permittedWei = whitelistPermittedAmount(msg.sender);
-        uint256 weiAmount = msg.value;
-        require(weiAmount <= permittedWei);
-
-        // Update amount of whitelist cap used.
-        addressWhitelistUsed[msg.sender] = addressWhitelistUsed[msg.sender].add(weiAmount);
-
-        // Calculate token amount to be created.
-        uint256 tokens = weiAmount.mul(rate);
-
-        // Calculate bonus.
-        uint256 bonusTokens;
-        if (presalePurchase) {
-            // Check minimum contribution is made.
-            require(addressWhitelistUsed[msg.sender] >= MINIMUM_PRESALE_CONTRIBUTION);
-            bonusTokens = presaleBonusWei(weiAmount).mul(rate);
-        } else {
-            bonusTokens = fullsaleBonusWei(weiAmount).mul(rate);
-        }
-        uint256 tokensPurchased = tokens.add(bonusTokens);
-
-        // Update tracking state.
-        weiRaised = weiRaised.add(weiAmount);
-        tokensDistributed = tokensDistributed.add(tokensPurchased);
-
-        // Check contribution is within total cap
-        // and tokens are within token cap.
-        require(weiRaised <= cap);
-        require(tokensDistributed <= TOTAL_SALE_TOKENS);
-
-        // Deliver tokens.
-        assert(token.mint(msg.sender, tokensPurchased));
-        logTokenPurchase(msg.sender, weiAmount, tokensPurchased);
-
-        // Immediately send ETH to multiSig address.
-        forwardFunds();
-
-        // Trigger presale end based on cap.
-        if (presalePurchase && !duringPresale()) {
-            fullSaleStart = now;
-        }
-
-        return true;
-    }
-
-
-    /*----------- Internal Methods -----------*/
-
-    /**
-     * @dev Forwards funds collected to secure multiSig wallet.
-     */
-    function forwardFunds() internal multiSigIsSet {
-        multiSig.transfer(msg.value);
-    }
-
-
     /*----------- Constant Methods -----------*/
-
     /**
      * @dev Allows purchasers and applications to view current caps by address.
      *      A cap set to 1 defers to the default cap, otherwise the cap set
@@ -466,13 +338,12 @@ contract WealthECrowdsale is Pausable {
         uint256 whitelistCap = addressWhitelistCap[_purchaser];
 
         // whitelistCap of 1 defers to the `defaultWhitelistCap`.
-        if(whitelistCap == 1) {
+        if (whitelistCap == 1) {
             whitelistCap = defaultWhitelistCap;
         }
 
         return whitelistCap;
     }
-
 
     /**
      * @dev Determine how much wei an address is permitted to contribute.
@@ -485,30 +356,6 @@ contract WealthECrowdsale is Pausable {
         // Subtract portion of cap they have already used.
         return purchaserCap.sub(addressWhitelistUsed[_purchaser]);
     }
-
-
-    /**
-     * @dev Determines bonus in terms of wei.
-     * @param _wei amount of wei contributed.
-     */
-    function presaleBonusWei(uint256 _wei) public pure returns (uint256) {
-        uint256 bonus = 0;
-        uint256 twoDigitPercent = 10 ** 16;
-
-        if (_wei >= 208 ether) {
-            // 45% for 208 ETH or more.
-            bonus = _wei.mul(45).mul(twoDigitPercent).div(GRAINS);
-        } else if (_wei >= 83 ether) {
-            // 40% for 83 ETH or more.
-            bonus = _wei.mul(40).mul(twoDigitPercent).div(GRAINS);
-        } else if (_wei >= 41 ether) {
-            // 35% for 41 ETH or more.
-            bonus = _wei.mul(35).mul(twoDigitPercent).div(GRAINS);
-        }
-
-        return bonus;
-    }
-
 
     /**
      * @dev Determines bonus in terms of wei.
@@ -541,28 +388,72 @@ contract WealthECrowdsale is Pausable {
         return bonus;
     }
 
-
-    /**
-     * @dev indicates whether the presale is currently open.
-     */
-    function duringPresale() public view returns (bool) {
-        bool withinPresalePeriod = now >= START_TIME && now < fullSaleStart;
-        bool belowPresaleCap = weiRaised < presaleCap;
-        return withinPresalePeriod && belowPresaleCap;
-    }
-
-
-    // @return true if the transaction can buy tokens
-    function validPurchase() internal view returns (bool) {
-        bool withinPeriod = now >= START_TIME && now <= END_TIME;
-        bool nonZeroPurchase = msg.value != 0;
-        return withinPeriod && nonZeroPurchase && !ownerEnded;
-    }
-
-
     // @return true if crowdsale event has ended
     function hasEnded() public view returns (bool) {
         return now > END_TIME || ownerEnded;
     }
 
+    // @return true if the transaction can buy tokens
+    function validPurchase() internal view returns (bool) {
+        bool withinPeriod = now >= fullSaleStart && now <= END_TIME;
+        bool nonZeroPurchase = msg.value != 0;
+        return withinPeriod && nonZeroPurchase && !ownerEnded;
+    }
+
+    /*----------- Internal Methods -----------*/
+    /**
+     * @dev Trades ETH for tokens.
+     *      Modified from zeppelin-solidity implementation to restrict purchases
+     *      to KYC list, to handle bonuses, and track tokens distributed.
+     */
+    function buyTokens()
+        internal
+        multiSigIsSet
+        capIsSet
+        rateIsSet
+        whenNotPaused
+        returns (bool)
+    {
+        require(validPurchase());
+
+        // Check whitelist for permitted contribution amount.
+        uint256 permittedWei = whitelistPermittedAmount(msg.sender);
+        uint256 weiAmount = msg.value;
+        require(weiAmount <= permittedWei);
+
+        // Update amount of whitelist cap used.
+        addressWhitelistUsed[msg.sender] = addressWhitelistUsed[msg.sender].add(weiAmount);
+
+        // Calculate token amount to be created.
+        uint256 tokens = weiAmount.mul(rate);
+
+        // Calculate bonus.
+        uint256 bonusTokens = fullsaleBonusWei(weiAmount).mul(rate);
+        uint256 tokensPurchased = tokens.add(bonusTokens);
+
+        // Update tracking state.
+        weiRaised = weiRaised.add(weiAmount);
+        tokensDistributed = tokensDistributed.add(tokensPurchased);
+
+        // Check contribution is within total cap
+        // and tokens are within token cap.
+        require(weiRaised <= cap);
+        require(tokensDistributed <= TOTAL_SALE_TOKENS);
+
+        // Deliver tokens.
+        assert(token.mint(msg.sender, tokensPurchased));
+        LogTokenPurchase(msg.sender, weiAmount, tokensPurchased);
+
+        // Immediately send ETH to multiSig address.
+        forwardFunds();
+
+        return true;
+    }
+
+    /**
+     * @dev Forwards funds collected to secure multiSig wallet.
+     */
+    function forwardFunds() internal multiSigIsSet {
+        multiSig.transfer(msg.value);
+    }
 }

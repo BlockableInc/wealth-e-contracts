@@ -32,11 +32,8 @@ let batchAmounts;
 const globalRate = 7000;
 const globalTokenCap = 300 * million;
 const globalPresaleMinETH = 41;
-const presaleBonuses = [1.35, 1.4, 1.45];
 const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
-const presaleBonuseThresholds = [globalPresaleMinETH, 83, 208];
-const startTime = new Date('Thurs, 1 Feb 2018 00:00:00 GMT').getUnixTime();
-const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();;
+const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();
 const endTime = new Date('Mon, 21 May 2018 00:00:00 GMT').getUnixTime();
 
 
@@ -79,21 +76,17 @@ contract('WealthECrowdsale', (accounts) => {
     describe('Contract Specs', () => {
         it('should have correct dates, grains, and allocations set', async () => {
 
-            const start = await crowdsale.START_TIME();
             const end = await crowdsale.END_TIME();
             const publicStart = await crowdsale.PUBLIC_START_TIME();
             const fullSaleStart = await crowdsale.fullSaleStart();
             const grains = await crowdsale.GRAINS();
             const totalSaleTokens = await crowdsale.TOTAL_SALE_TOKENS();
-            const minContribution = await crowdsale.MINIMUM_PRESALE_CONTRIBUTION();
     
-            assert.strictEqual(start.toNumber(), startTime);
             assert.strictEqual(end.toNumber(), endTime);
             assert.strictEqual(publicStart.toNumber(), publicStartTime);
             assert.strictEqual(fullSaleStart.toNumber(), publicStartTime);
             assert.strictEqual(parseInt(fromWei(grains)), 1);
             assert.strictEqual(parseInt(fromWei(totalSaleTokens)), globalTokenCap);
-            assert.strictEqual(parseInt(fromWei(minContribution)), globalPresaleMinETH);
         });
     });
 
@@ -243,56 +236,6 @@ contract('WealthECrowdsale', (accounts) => {
             }
     
             cap = await crowdsale.cap();
-            assert.strictEqual(cap.toNumber(), 100)
-    
-        });
-    });
-
-
-    /*----------- Presale Cap Setter -----------*/
-
-    describe('Presale Cap Setter', () => {
-        it('should fail to set presaleCap when cap is not greater than 0', async () => {
-            try {
-                await crowdsale.setPresaleCap(0, { from: owner });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            const capIsSet = await crowdsale.presaleCapSet();
-            assert.isFalse(capIsSet);
-        });
-    
-    
-        it('should fail to set presaleCap when called by an address other than owner', async () => {
-            try {
-                await crowdsale.setPresaleCap(100, { from: accounts[3] });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            const capIsSet = await crowdsale.presaleCapSet();
-            assert.isFalse(capIsSet);
-        });
-    
-    
-        it('should fail to set presaleCap when cap already set', async () => {
-    
-            await crowdsale.setPresaleCap(100, { from: owner });
-    
-            const capIsSet = await crowdsale.presaleCapSet();
-            assert.isTrue(capIsSet);
-    
-            let cap = await crowdsale.presaleCap();
-            assert.strictEqual(cap.toNumber(), 100)
-    
-            try {
-                await crowdsale.setPresaleCap(200, { from: owner });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            cap = await crowdsale.presaleCap();
             assert.strictEqual(cap.toNumber(), 100)
     
         });
@@ -774,7 +717,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
-            await crowdsale.setPresaleCap(toWei(100), { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
     
             // Add to whitelist.
@@ -801,20 +743,61 @@ contract('WealthECrowdsale', (accounts) => {
             const tokenBalance = await token.balanceOf(accounts[4]);
             assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
         });
+
+        
+        it('should accept payment if startTime moved to now or earlier', async () => {
+
+            token = await WealthE.new({ from: owner });
+            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
     
+            // Set ownership, multiSig, rate, and cap.
+            await token.transferOwnership(crowdsale.address, { from: owner });
+            await crowdsale.claimTokenOwnership({ from: owner });
+            await crowdsale.setMultiSig(multiSig, { from: owner });
+            await crowdsale.setRate(1, { from: owner });
+            await crowdsale.setCap(toWei(30303 * 3), { from: owner });
+            
+            const earlyTime = crowdsale.setSaleStart(new Date('Thurs, 8 March 2018 00:00:00 GMT').getUnixTime(), { from: owner });
     
+            // Use default whitelist cap.
+            await crowdsale.setDefaultWhitelistCap(
+                toWei(30303),
+                { from: owner }
+            );
+    
+            // Add to whitelist.
+            await crowdsale.setWhitelistAddressBatch(
+                [accounts[5], accounts[8], accounts[9]],
+                [1, 1, 1],
+                { from: owner }
+            );
+    
+            // Complete purchase.
+            await web3.eth.sendTransaction({
+                to: crowdsale.address,
+                from: accounts[5],
+                gas: 200000,
+                value: toWei(globalPresaleMinETH)
+            });
+    
+            // Confirm token allocation took place.
+            const tokenBalance_0 = await token.balanceOf(accounts[5]);
+            assert.strictEqual(fromWei(tokenBalance_0).toNumber(), globalPresaleMinETH * (fullsaleBonuses[6]) * 1);
+ 
+        });
+    
+
         it('should fail to accept payments if ownership not set', async () => {
     
             token = await WealthE.new({ from: owner });
             crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
     
-            await increaseTimeTo(startTime);
+            await increaseTimeTo(publicStartTime);
     
             // Set multiSig, rate, cap.
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
-            await crowdsale.setPresaleCap(toWei(100), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -851,7 +834,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
-            await crowdsale.setPresaleCap(toWei(100), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -888,7 +870,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
-            await crowdsale.setPresaleCap(toWei(100), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -925,7 +906,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
-            await crowdsale.setPresaleCap(toWei(100), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -950,68 +930,7 @@ contract('WealthECrowdsale', (accounts) => {
             const tokenBalance = await token.balanceOf(accounts[4]);
             assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
         });
-    
-    
-        it('should fail if minimum contribution is not sent', async () => {
-    
-            token = await WealthE.new({ from: owner });
-            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
-    
-            // Set ownership, multiSig, rate, and cap.
-            await token.transferOwnership(crowdsale.address, { from: owner });
-            await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
-            await crowdsale.setRate(globalRate, { from: owner });
-            await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(globalPresaleMinETH * 3), { from: owner });
-    
-            // Add to whitelist.
-            await crowdsale.setWhitelistAddress(
-                accounts[4],
-                toWei(globalPresaleMinETH),
-                { from: owner }
-            );
-    
-            // Send 0 ETH
-            try {
-                await web3.eth.sendTransaction({
-                    to: crowdsale.address,
-                    from: accounts[4],
-                    gas: 200000,
-                    value: 0
-                });
-    
-            } catch (error) {
-                assertError(error);
-            }
-    
-    
-            // Confirm no token allocation took place.
-            let tokenBalance = await token.balanceOf(accounts[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
-    
-    
-            // Send below MINIMUM_CONTRIBUTION/
-            try {
-                await web3.eth.sendTransaction({
-                    to: crowdsale.address,
-                    from: accounts[4],
-                    gas: 200000,
-                    value: toWei(globalPresaleMinETH - 1)
-                });
-    
-            } catch (error) {
-                assertError(error);
-            }
-    
-    
-            // Confirm no token allocation took place.
-            tokenBalance = await token.balanceOf(accounts[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
-    
-    
-        });
-    
+
     
         it('should accept payments if ownership, multisig, rate, and cap are set', async () => {
     
@@ -1024,7 +943,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -1044,7 +962,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             const tokenBalance = await token.balanceOf(accounts[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * (presaleBonuses[0]) * globalRate));
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * fullsaleBonuses[6] * globalRate));
     
         });
     
@@ -1053,7 +971,7 @@ contract('WealthECrowdsale', (accounts) => {
             const tokensSold = await crowdsale.tokensDistributed();
             const weiRaised = await crowdsale.weiRaised();
     
-            assert.strictEqual(parseInt(fromWei(tokensSold)), parseInt(globalPresaleMinETH * (presaleBonuses[0]) * globalRate));
+            assert.strictEqual(parseInt(fromWei(tokensSold)), parseInt(globalPresaleMinETH * fullsaleBonuses[6] * globalRate));
             assert.strictEqual(parseInt(fromWei(weiRaised)), globalPresaleMinETH);
         });
     
@@ -1080,7 +998,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
     
             try {
@@ -1113,7 +1030,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -1155,7 +1071,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             tokenBalance = await token.balanceOf(accounts[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * (presaleBonuses[0]) * globalRate));
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * fullsaleBonuses[6] * globalRate));
         });
     
     
@@ -1170,7 +1086,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
             // Add to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -1189,7 +1104,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             const tokenBalance = await token.balanceOf(accounts[6]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * (presaleBonuses[0]) * globalRate));
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * fullsaleBonuses[6] * globalRate));
     
             // Confirm whitelist cap unchanged.
             const whitelistCap = await crowdsale.getWhitelistCap(accounts[6]);
@@ -1226,7 +1141,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             const tokenBalance = await token.balanceOf(accounts[6]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * (presaleBonuses[0]) * 2 * globalRate));
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), parseInt(globalPresaleMinETH * fullsaleBonuses[6] * 2 * globalRate));
     
             // Confirm whitelist cap unchanged.
             const whitelistCap = await crowdsale.getWhitelistCap(accounts[6]);
@@ -1277,7 +1192,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation took place.
             const tokenBalance = await token.balanceOf(accounts[6]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), (globalPresaleMinETH * presaleBonuses[0]) * 3 * globalRate);
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), (globalPresaleMinETH * fullsaleBonuses[6]) * 3 * globalRate);
     
             // Permitted should be 0 ETH.
             whitelistPermitted = await crowdsale.whitelistPermittedAmount(accounts[6]);
@@ -1320,7 +1235,7 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm token allocation did not take place.
             const tokenBalance = await token.balanceOf(accounts[6]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), globalPresaleMinETH * (presaleBonuses[0]) * 3 * globalRate);
+            assert.strictEqual(parseInt(fromWei(tokenBalance)), globalPresaleMinETH * fullsaleBonuses[6] * 3 * globalRate);
     
             // Permitted should still be globalPresaleMinETH ETH.
             whitelistPermitted = await crowdsale.whitelistPermittedAmount(accounts[6]);
@@ -1342,7 +1257,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(localRate, { from: owner });
             await crowdsale.setCap(toWei(localRate * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(localRate * 3), { from: owner });
     
             // Add 3x the rate to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -1382,134 +1296,11 @@ contract('WealthECrowdsale', (accounts) => {
     
             // Confirm second token allocation did not take place.
             const tokenBalance = await token.balanceOf(accounts[6]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance).toNumber()), parseInt(localRate * globalPresaleMinETH * 2 * presaleBonuses[0]));
+            assert.strictEqual(parseInt(fromWei(tokenBalance).toNumber()), parseInt(localRate * globalPresaleMinETH * 2 * fullsaleBonuses[6]));
     
             // Permitted should be globalPresaleMinETH ETH.
             whitelistPermitted = await crowdsale.whitelistPermittedAmount(accounts[6]);
             assert.strictEqual(fromWei(whitelistPermitted).toNumber(), globalPresaleMinETH);
-        });
-    });
-
-
-    /*----------- Bonus Calculations -----------*/
-
-    describe('Bonus Calculations', () => {
-        it('should give correct bonuses', async () => {
-
-            token = await WealthE.new({ from: owner });
-            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
-    
-            // Set ownership, multiSig, rate, and cap.
-            await token.transferOwnership(crowdsale.address, { from: owner });
-            await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
-            await crowdsale.setRate(globalRate, { from: owner });
-            await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
-    
-            // Use default whitelist cap.
-            await crowdsale.setDefaultWhitelistCap(
-                toWei(30303),
-                { from: owner }
-            );
-    
-            // Add to whitelist.
-            await crowdsale.setWhitelistAddressBatch(
-                [accounts[5], accounts[8], accounts[9]],
-                [1, 1, 1],
-                { from: owner }
-            );
-    
-    
-            // Complete three purchases.
-            await web3.eth.sendTransaction({
-                to: crowdsale.address,
-                from: accounts[5],
-                gas: 200000,
-                value: toWei(presaleBonuseThresholds[0])
-            });
-    
-            await web3.eth.sendTransaction({
-                to: crowdsale.address,
-                from: accounts[8],
-                gas: 200000,
-                value: toWei(presaleBonuseThresholds[1])
-            });
-    
-            await web3.eth.sendTransaction({
-                to: crowdsale.address,
-                from: accounts[9],
-                gas: 200000,
-                value: toWei(presaleBonuseThresholds[2])
-            });
-    
-    
-    
-            // Confirm token allocation took place.
-            const tokenBalance_0 = await token.balanceOf(accounts[5]);
-            assert.strictEqual(fromWei(tokenBalance_0).toNumber(), parseInt(presaleBonuseThresholds[0] * (presaleBonuses[0]) * globalRate));
-    
-            const tokenBalance_1 = await token.balanceOf(accounts[8]);
-            assert.strictEqual(
-                fromWei(tokenBalance_1).toNumber(),
-                // Avoid floating point imprecision.
-                new BigNumber(presaleBonuseThresholds[1]).mul((presaleBonuses[1]) * 100).div(100).mul(globalRate).toNumber()
-            );
-    
-            const tokenBalance_2 = await token.balanceOf(accounts[9]);
-            assert.strictEqual(Math.round(fromWei(tokenBalance_2).toNumber()), Math.round(presaleBonuseThresholds[2] * presaleBonuses[2] * globalRate));
-    
-        });
-    });
-
-
-    /*----------- Transition to Full Sale -----------*/
-
-    describe('Transition to Full Sale', () => {
-        it('should transition to full sale once presaleCap reached', async () => {
-
-            token = await WealthE.new({ from: owner });
-            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
-    
-            // Set ownership, multiSig, rate, and cap.
-            await token.transferOwnership(crowdsale.address, { from: owner });
-            await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
-            await crowdsale.setRate(1, { from: owner });
-            await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303), { from: owner });
-    
-            // Use default whitelist cap.
-            await crowdsale.setDefaultWhitelistCap(
-                toWei(30303),
-                { from: owner }
-            );
-    
-            // Add to whitelist.
-            await crowdsale.setWhitelistAddressBatch(
-                [accounts[5], accounts[8], accounts[9]],
-                [1, 1, 1],
-                { from: owner }
-            );
-    
-            // Currently during presale.
-            assert.isTrue(await crowdsale.duringPresale());
-    
-            // Complete purchase.
-            await web3.eth.sendTransaction({
-                to: crowdsale.address,
-                from: accounts[5],
-                gas: 200000,
-                value: toWei(30303)
-            });
-    
-    
-            // Confirm token allocation took place.
-            const tokenBalance_0 = await token.balanceOf(accounts[5]);
-            assert.strictEqual(fromWei(tokenBalance_0).toNumber(), 30303 * (presaleBonuses[2]) * 1);
-    
-            // Confirm transitioned into full sale.
-            assert.isFalse(await crowdsale.duringPresale());
         });
     });
 
@@ -1528,7 +1319,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
     
             // Add minimum to whitelist.
             await crowdsale.setWhitelistAddress(
@@ -1600,7 +1390,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
     
             // Try to finalize.
             try {
@@ -1634,7 +1423,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
     
             // Use default whitelist cap.
             await crowdsale.setDefaultWhitelistCap(
@@ -1786,7 +1574,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
     
             // Shift time forward.
             await increaseTimeTo(endTime + 100);
@@ -1810,7 +1597,6 @@ contract('WealthECrowdsale', (accounts) => {
             await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
-            await crowdsale.setPresaleCap(toWei(30303 * 3), { from: owner });
     
             // Add minimum to whitelist.
             await crowdsale.setWhitelistAddress(
