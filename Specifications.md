@@ -55,7 +55,7 @@ Is Pausable. The owner address can pause and unpause the crowdsale at anytime. U
 
 ## Funds collected
 
-Funds collected are to be stored in a multisig wallet. As such, the crowdsale contract allows for a one time setting of multisig address.
+Funds collected are to be stored in a multisig wallet `0x4de203840484767a4ba972c202e835cc23fb14d2`. As such, the crowdsale contract allows for a one time setting of multisig address.
 
 The crowdsale contract forwards funds to multisig upon receipt.
 
@@ -83,9 +83,9 @@ Additionally there is a presale cap. Once reached the sale converts to the full 
 Addresses and vesting required for reserve, team, and network growth unless handled outside of the smart contract.
 
   - Crowdsale: 50% (300 million WRE)
-  - Reserve 20% (120 million WRE)
-  - Team 20% (120 million WRE)
-  - Network Growth 10% (60 million WRE)
+  - Reserve 20% (120 million WRE) `0x022c77a3fb7cb7a654bcdb9467e6175a07fc5162`
+  - Team 20% (120 million WRE) `0xc9dbf8a53630f6f2ae9de33778f5c77993dd4cf5`
+  - Network Growth 10% (60 million WRE) `0xe345a65989d881c7bf40e7995a38785379df9ceb`
   - Bounty program 2%
 
 - [ ] test coverage complete
