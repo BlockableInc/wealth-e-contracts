@@ -15,6 +15,9 @@ contract WealthECrowdsale is Pausable {
     uint256 public constant PUBLIC_START_TIME = 1522915200;                    // Thursday, April 5, 2018 8:00:00 AM GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
     uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
+    uint256 public constant TEAM_TOKENS = 120 * (10 ** 6) * GRAINS;            // Team tokens, locked for 6 months.
+    uint256 public constant NETWORK_GROWTH_TOKENS = 60 * (10 ** 6) * GRAINS;   // Network growth tokens, unlocked.
+    uint256 public constant RESERVE_TOKENS = 120 * (10 ** 6) * GRAINS;         // Reserve tokens, unlocked.
 
     /*----------- Global Variables -----------*/
 
@@ -29,6 +32,7 @@ contract WealthECrowdsale is Pausable {
     // Timelock address.
     address public timelockAddress;
     bool public timelockAddressSet = false;
+    bool public timelockOwnershipClaimed = false;
 
     // Cumulative tracking variable.
     uint256 public weiRaised;
@@ -43,8 +47,12 @@ contract WealthECrowdsale is Pausable {
     /*----------- Global Address Vairables -----------*/
 
     // Recipient of the ETH funds collected.
-    address public multiSig;
-    bool public multiSigSet = false;
+    address public multiSig = 0x4DE203840484767a4ba972c202E835Cc23Fb14D2;
+    bool public multiSigSet = true;
+
+    address public teamTokenAddress = 0xc9Dbf8A53630F6F2Ae9De33778F5c77993DD4cF5;
+    address public reserveTokenAddress = 0x022C77A3Fb7CB7A654bCdb9467E6175a07fC5162;
+    address public networkGrowthTokenAddress = 0xE345a65989D881C7BF40e7995A38785379dF9CEB;
 
     /*----------- Global Whitelist Variables -----------*/
 
@@ -220,8 +228,27 @@ contract WealthECrowdsale is Pausable {
     /**
      * @dev Claim ownership of claimable timelock.
      */
-    function claimTimelockOwnership() public onlyOwner {
+    function claimTimelockOwnership()
+        public
+        timelockAddressIsSet
+        onlyOwner
+    {
+        require(!timelockOwnershipClaimed);
+
+        // Claim ownership.
         tokenTimelock.claimOwnership();
+        timelockOwnershipClaimed = true;
+
+        // Send allocations.
+        // Team Tokens sent to vault.
+        require(token.mint(timelockAddress, TEAM_TOKENS));
+        tokenTimelock.depositTokens(teamTokenAddress, TEAM_TOKENS);
+
+        // Network Growth Tokens.
+        assert(token.mint(networkGrowthTokenAddress, NETWORK_GROWTH_TOKENS));
+
+        // Reserve Tokens.
+        assert(token.mint(reserveTokenAddress, RESERVE_TOKENS));
     }
 
     /*----------- Owner: Presale Transfers -----------*/

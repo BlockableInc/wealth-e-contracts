@@ -29,15 +29,13 @@ Fixed supply (revoke minting ability after crowdsale).
 # Crowdsale Contract
 
 The crowdsale contract is for the presale and full public sale.
-Presale tokens are distributed manully by the contract owner.
+Presale tokens are distributed manually by the contract owner.
 The full public sale exchanges tokens for ETH.
 
 
 ## Key Dates
 
-Public presale start:  February 1, 2018 12:00am GMT
-
-Full public sale start: Wednesday, April 4, 2018 12:00:00 AM GMT
+Full public sale start: Wednesday, April 5, 2018 8:00:00 AM GMT
 
 Full public sale end: Monday, May 21, 2018 12:00:00 AM GMT
 
@@ -71,13 +69,6 @@ In addition to the ETH hardcap, no more than `300 million` tokens are to be sold
 - [x] test coverage complete
 
 
-## Presale Cap
-
-Additionally there is a presale cap. Once reached the sale converts to the full public sale with a separate set of bonus conditions.
-
-- [x] test coverage complete
-
-
 ## Distribution
 
 Addresses and vesting required for reserve, team, and network growth unless handled outside of the smart contract.
@@ -86,7 +77,6 @@ Addresses and vesting required for reserve, team, and network growth unless hand
   - Reserve 20% (120 million WRE) `0x022c77a3fb7cb7a654bcdb9467e6175a07fc5162`
   - Team 20% (120 million WRE) `0xc9dbf8a53630f6f2ae9de33778f5c77993dd4cf5`
   - Network Growth 10% (60 million WRE) `0xe345a65989d881c7bf40e7995a38785379df9ceb`
-  - Bounty program 2%
 
 - [ ] test coverage complete
 
