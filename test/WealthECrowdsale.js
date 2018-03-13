@@ -25,10 +25,11 @@ Date.time = function() { return Date.now().getUnixTime(); }
 const million = 1e6;
 let token;
 let owner;
-let multiSig;
 let crowdsale;
 let batchAddresses;
 let batchAmounts;
+const multiSig = '0x4de203840484767a4ba972c202e835cc23fb14d2';
+const teamTokenAddress = '0xc9dbf8a53630f6f2ae9de33778f5c77993dd4cf5';
 const globalRate = 7000;
 const globalTokenCap = 300 * million;
 const globalPresaleMinETH = 41;
@@ -65,7 +66,6 @@ contract('WealthECrowdsale', (accounts) => {
     before(async () => {
 
         owner = accounts[0];
-        multiSig = accounts[7];
         batchAddresses = accounts.slice(10, 15);
         // All amounts converted to wei with the exception of index 0.
         // The purpse of this is to use 1 as a flag to defer to the
@@ -101,34 +101,9 @@ contract('WealthECrowdsale', (accounts) => {
     /*----------- MultiSig Wallet Setter -----------*/
 
     describe('Multisig', () => {
-        it('should fail to set multisig address when invalid address is used', async () => {
-            try {
-                await crowdsale.setMultiSig(0x0, { from: owner });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            const multiSigIsSet = await crowdsale.multiSigSet();
-            assert.isFalse(multiSigIsSet);
-        });
-    
-    
-        it('should fail to set multisig address when called by an address other than owner', async () => {
-            try {
-                await crowdsale.setMultiSig(multiSig, { from: accounts[3] });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            const multiSigIsSet = await crowdsale.multiSigSet();
-            assert.isFalse(multiSigIsSet);
-        });
-    
     
         it('should fail to set multisig address when multisig already set', async () => {
-    
-            await crowdsale.setMultiSig(multiSig, { from: owner });
-    
+
             const multiSigIsSet = await crowdsale.multiSigSet();
             assert.isTrue(multiSigIsSet);
     
@@ -434,13 +409,14 @@ contract('WealthECrowdsale', (accounts) => {
             await token.transferOwnership(crowdsale.address, { from: owner });
             await timelock.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setTimelockAddress(timelock.address, { from: owner });
             await crowdsale.claimTimelockOwnership({ from: owner });
-            assert.isTrue(await crowdsale.timelockAddressSet());
+            assert.isTrue(await crowdsale.timelockAddressSet());            
         });
 
         it('it should fail if called by address other than owner', async () => {
+    
+            const startingBalance = await token.balanceOf(timelock.address);
     
             await assertRevert(crowdsale.mintPresaleTokens(
                 accounts[2],
@@ -449,14 +425,21 @@ contract('WealthECrowdsale', (accounts) => {
             ));
     
             // Confirm no token transfer took place.
-            const tokenBalance = await token.balanceOf(timelock.address);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
+            const endingBalance = await token.balanceOf(timelock.address);
+            const tokensOwed = await timelock.beneficiaryMap.call(accounts[2]);
+            assert.strictEqual(parseInt(fromWei(tokensOwed)), 0);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
     
         });
     
     
         it('it should fail to send presale tokens to crowdsale multisig', async () => {
     
+            const startingBalance = await token.balanceOf(timelock.address);
+            let tokensOwed = await timelock.beneficiaryMap.call(teamTokenAddress);
+            
+            assert.strictEqual(parseInt(fromWei(tokensOwed)), 120000000);
+
             await assertRevert(crowdsale.mintPresaleTokens(
                 multiSig,
                 toWei(100),
@@ -464,14 +447,18 @@ contract('WealthECrowdsale', (accounts) => {
             ));
     
             // Confirm no token transfer took place.
-            const tokenBalance = await token.balanceOf(timelock.address);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
+            const endingBalance = await token.balanceOf(timelock.address);
+            tokensOwed = await timelock.beneficiaryMap.call(teamTokenAddress);
+            assert.strictEqual(parseInt(fromWei(tokensOwed)), 120000000);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
     
         });
     
     
         it('it should fail to send presale tokens to null address', async () => {
     
+            const startingBalance = await token.balanceOf(timelock.address);
+
             await assertRevert(crowdsale.mintPresaleTokens(
                 0x0,
                 toWei(100),
@@ -479,14 +466,15 @@ contract('WealthECrowdsale', (accounts) => {
             ));
     
             // Confirm no token transfer took place.
-            const tokenBalance = await token.balanceOf(timelock.address);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
-    
+            const endingBalance = await token.balanceOf(timelock.address);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
         });
     
     
         it('it should fail to send presale tokens to crowdsale address', async () => {
     
+            const startingBalance = await token.balanceOf(timelock.address);
+
             await assertRevert(crowdsale.mintPresaleTokens(
                 crowdsale.address,
                 toWei(100),
@@ -494,8 +482,10 @@ contract('WealthECrowdsale', (accounts) => {
             ));
 
             // Confirm no token transfer took place.
-            const tokenBalance = await token.balanceOf(timelock.address);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
+            const endingBalance = await token.balanceOf(timelock.address);
+            const tokensOwed = await timelock.beneficiaryMap.call(crowdsale.address);
+            assert.strictEqual(parseInt(fromWei(tokensOwed)), 0);
+            assert.strictEqual(parseInt(fromWei(endingBalance)) - parseInt(fromWei(startingBalance)), 0);
     
         });
     
@@ -515,7 +505,7 @@ contract('WealthECrowdsale', (accounts) => {
         });
     
     
-        it('it should send tokens to address specified, even when token paused', async () => {
+        it('it should timelock tokens for the address specified, even when token paused', async () => {
     
             // Reclaim, pause, then hand back to crowdsale.
             await token.reclaimOwnership({ from: owner });
@@ -721,7 +711,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
     
@@ -759,7 +748,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(1, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
             
@@ -801,43 +789,6 @@ contract('WealthECrowdsale', (accounts) => {
             await increaseTimeTo(publicStartTime);
     
             // Set multiSig, rate, cap.
-            await crowdsale.setMultiSig(multiSig, { from: owner });
-            await crowdsale.setRate(globalRate, { from: owner });
-            await crowdsale.setCap(toWei(100), { from: owner });
-    
-            // Add to whitelist.
-            await crowdsale.setWhitelistAddress(
-                accounts[4],
-                toWei(globalPresaleMinETH),
-                { from: owner }
-            );
-    
-            try {
-                // Purchase tokens.
-                await web3.eth.sendTransaction({
-                    to: crowdsale.address,
-                    from: accounts[4],
-                    gas: 200000,
-                    value: toWei(globalPresaleMinETH)
-                });
-            } catch (error) {
-                assertError(error);
-            }
-    
-            // Confirm token allocation took place.
-            const tokenBalance = await token.balanceOf(accounts[4]);
-            assert.strictEqual(parseInt(fromWei(tokenBalance)), 0);
-        });
-    
-    
-        it('should fail to accept payments if multisig not set', async () => {
-    
-            token = await WealthE.new({ from: owner });
-            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
-    
-            // Set ownership, rate, cap.
-            await token.transferOwnership(crowdsale.address, { from: owner });
-            await crowdsale.claimTokenOwnership({ from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
     
@@ -874,7 +825,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setCap(toWei(100), { from: owner });
     
             // Add to whitelist.
@@ -910,7 +860,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
     
             // Add to whitelist.
@@ -946,7 +895,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
             
@@ -1001,7 +949,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
@@ -1033,7 +980,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
@@ -1089,7 +1035,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(globalPresaleMinETH * 3), { from: owner });
     
@@ -1260,7 +1205,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(localRate, { from: owner });
             await crowdsale.setCap(toWei(localRate * 3), { from: owner });
     
@@ -1322,7 +1266,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
     
@@ -1393,7 +1336,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
     
@@ -1426,7 +1368,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
 
@@ -1572,7 +1513,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
     
@@ -1595,7 +1535,6 @@ contract('WealthECrowdsale', (accounts) => {
             // Set ownership, multiSig, rate, and cap.
             await token.transferOwnership(crowdsale.address, { from: owner });
             await crowdsale.claimTokenOwnership({ from: owner });
-            await crowdsale.setMultiSig(multiSig, { from: owner });
             await crowdsale.setRate(globalRate, { from: owner });
             await crowdsale.setCap(toWei(30303 * 3), { from: owner });
     
