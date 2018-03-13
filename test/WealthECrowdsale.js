@@ -33,7 +33,7 @@ const globalRate = 7000;
 const globalTokenCap = 300 * million;
 const globalPresaleMinETH = 41;
 const fullsaleBonuses = [1, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
-const publicStartTime = new Date('Wed, 4 Apr 2018 00:00:00 GMT').getUnixTime();
+const publicStartTime = new Date('Thurs, 5 Apr 2018 08:00:00 GMT').getUnixTime();
 const endTime = new Date('Mon, 21 May 2018 00:00:00 GMT').getUnixTime();
 const timelockRelease = new Date('Wed 21 Nov 2018 00:00:00 GMT').getUnixTime();
 
