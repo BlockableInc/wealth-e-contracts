@@ -59,4 +59,4 @@ If encounter `Error: Invalid number of arguments to Solidity function` run `npm 
   1. Calling the `finalize` method transfers ownership of token back to crowdsale contract owner.
   2. IMPORTANT: The contract owner must claim the token with `claimOwnership` for the transfer of ownership to be complete.
 
-Ownership of token is needed for second and final public sale. The second sale will be responsible for removing the ability to mint further tokens as well as handling the remaining allocations (team/advisor, etc.) and associated vesting.
+The token ownerwill be responsible for removing the ability to mint further tokens.
