@@ -30,6 +30,8 @@ let batchAddresses;
 let batchAmounts;
 const multiSig = '0x4de203840484767a4ba972c202e835cc23fb14d2';
 const teamTokenAddress = '0xc9dbf8a53630f6f2ae9de33778f5c77993dd4cf5';
+const reserveFundAddress = '0x022c77a3fb7cb7a654bcdb9467e6175a07fc5162';
+const networkGrowthAddress = '0xe345a65989d881c7bf40e7995a38785379df9ceb';
 const globalRate = 7000;
 const globalTokenCap = 300 * million;
 const globalPresaleMinETH = 41;
@@ -1668,4 +1670,33 @@ contract('WealthECrowdsale', (accounts) => {
     });
     
     
+    /*----------  Allocation Wallets  ----------*/
+    
+    describe('Allocation Wallets', () => {
+        let timelock;
+
+        before(async () => {
+
+            token = await WealthE.new({ from: owner });
+            crowdsale = await WealthECrowdsale.new(token.address, { from: owner, gas: 4000000 });
+            timelock = await TimelockArtifact.new(token.address, { from: owner });
+
+            await token.setupReclaim({ from: owner });
+            await token.transferOwnership(crowdsale.address, { from: owner });
+            await timelock.transferOwnership(crowdsale.address, { from: owner });
+            await crowdsale.claimTokenOwnership({ from: owner });
+            await crowdsale.setTimelockAddress(timelock.address, { from: owner });
+            await crowdsale.claimTimelockOwnership({ from: owner });
+            assert.isTrue(await crowdsale.timelockAddressSet());
+        });
+
+        it('it should preallocation the reserve and growth funds', async () => {
+    
+            const tokenBalance_0 = await token.balanceOf(reserveFundAddress);
+            const tokenBalance_1 = await token.balanceOf(networkGrowthAddress);
+
+            assert.strictEqual(parseInt(fromWei(tokenBalance_0)), 120e6);
+            assert.strictEqual(parseInt(fromWei(tokenBalance_1)), 60e6);
+        });
+    });
 });
