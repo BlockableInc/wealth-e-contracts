@@ -25,6 +25,18 @@ $ truffle test
 
 Note: Crowdsale contract tests shift ganache time forward. To test multiple times, restart ganache.
 
+## Testnet Testing
+
+```
+$ truffle migrate --network rinkeby
+```
+
+Then confirm the correct network addresses appear in the `build/contracts/` directory (manual update needed for WealthECrowdsale.json and TokenTimelock.json)
+
+```
+$ truffle exec initContracts.js --network rinkeby
+```
+
 ### Debugging
 
 If encounter `Error: Invalid number of arguments to Solidity function` run `npm run clean` to remove the build directory and rerun the above testing commands.
