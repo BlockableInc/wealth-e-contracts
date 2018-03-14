@@ -15,5 +15,5 @@ module.exports = async function(callback) {
     await token.pause();
     await timelock.transferOwnership(crowdsale.address);
     await crowdsale.setTimelockAddress(timelock.address);
-    await crowdsale.claimTimelockOwnership();
+    // await crowdsale.claimTimelockOwnership();
 }

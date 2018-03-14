@@ -53,14 +53,14 @@ If encounter `Error: Invalid number of arguments to Solidity function` run `npm 
 
   3. Pause token transfers.
   4. Transfer ownership of the timelock contract to the crowdsale contract.
-  5. Claim ownership of the timelock contract on the crwodsale contract.
-  6. Set the timelock address on the crowdsale contract.
+  5. Set the timelock address on the crowdsale contract.
 
 #### Requires manual execution
 
-  7. Call `setUpReclaim` as a safeguard on the token contract.
-  8. Transfer ownership of the token to the crowdsale contract for minting purposes.
-  9. Call `claimTokenOwnership` on the crowdsale contract to complete the ownership transfer.
+  6. Call `setUpReclaim` as a safeguard on the token contract.
+  7. Transfer ownership of the token to the crowdsale contract for minting purposes.
+  8. Call `claimTokenOwnership` on the crowdsale contract to complete the ownership transfer.
+  9. Claim ownership of the timelock contract on the crwodsale contract.
   10. Set the tokens per ETH rate.
   11. Set the sale hardcap.
   12. Set the setDefaultWhitelistCap.
