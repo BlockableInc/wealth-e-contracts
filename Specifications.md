@@ -78,7 +78,7 @@ Addresses and vesting required for reserve, team, and network growth unless hand
   - Team 20% (120 million WRE) `0xc9dbf8a53630f6f2ae9de33778f5c77993dd4cf5`
   - Network Growth 10% (60 million WRE) `0xe345a65989d881c7bf40e7995a38785379df9ceb`
 
-- [ ] test coverage complete
+- [x] test coverage complete
 
 
 ## Whitelist
