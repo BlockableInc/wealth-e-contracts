@@ -37,7 +37,7 @@ The full public sale exchanges tokens for ETH.
 
 Full public sale start: Wednesday, April 5, 2018 8:00:00 AM GMT
 
-Full public sale end: Monday, May 21, 2018 12:00:00 AM GMT
+Full public sale end: Monday, May 21, 2018 11:59:00 PM GMT
 
 Owner is permitted to close the sale early.
 

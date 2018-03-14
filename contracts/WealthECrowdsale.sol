@@ -11,7 +11,7 @@ contract WealthECrowdsale is Pausable {
 
     /*----------- Global Constants -----------*/
 
-    uint256 public constant END_TIME = 1526860800;                             // Monday, May 21, 2018 12:00:00 AM GMT crowdsale end time in seconds.
+    uint256 public constant END_TIME = 1526947140;                             // Monday, May 21, 2018 11:59:00 PM GMT crowdsale end time in seconds.
     uint256 public constant PUBLIC_START_TIME = 1522915200;                    // Thursday, April 5, 2018 8:00:00 AM GMT full public sale start time in seconds.
     uint256 public constant GRAINS = 10 ** 18;                                 // WealthE Tokens expressed in smallest denomination.
     uint256 public constant TOTAL_SALE_TOKENS = 300 * (10 ** 6) * (GRAINS);    // Total tokens for sale during crowdsale expressed in grains.
