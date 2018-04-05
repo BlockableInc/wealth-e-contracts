@@ -1,24 +1,29 @@
 require('babel-register');
 require('babel-polyfill');
 const HDWalletProvider = require("truffle-hdwallet-provider");
-// this is just a mnemonic used on ropsten for testing
-// clearly do not push a mainnet mnemonic phrase!
-const mnemonic = "clump cargo cage cage ensure gift name noble pill churn hour buzz photo common final vital lizard expose distance gaze can brief anger talent"
+const mnemonic = process.env.MNEMONIC;
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
   networks: {
+    live: {
+      provider: function() {
+        return new HDWalletProvider(mnemonic, `https://mainnet.infura.io/${process.env.INFURA_API_KEY}`)
+      },
+      gas: 28390+53921,
+      network_id: 1
+    },
     ropsten: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/P02k0Sd9DICxikYWGSpK")
+        return new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${process.env.INFURA_API_KEY}`)
       },
       gas: 6e6,
       network_id: 3
     },
     rinkeby: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/P02k0Sd9DICxikYWGSpK")
+        return new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${process.env.INFURA_API_KEY}`)
       },
       gas: 6e6,
       network_id: 4

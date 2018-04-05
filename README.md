@@ -46,29 +46,12 @@ If encounter `Error: Invalid number of arguments to Solidity function` run `npm 
 
 #### Covered by truffle migrate
 
-  1. Launch both the token and the crowdsale contracts to the public blockchain.
-  2. Launch the timelock contract.
+  1. Launch both the token contracts to the public blockchain.
 
 #### Covered by initContracts.js
 
-  3. Pause token transfers.
-  4. Transfer ownership of the timelock contract to the crowdsale contract.
-  5. Set the timelock address on the crowdsale contract.
+  2. Pause token transfers.
+  3. Transfer ownership of the token to the client's address.
 
-#### Requires manual execution
-
-  6. Call `setUpReclaim` as a safeguard on the token contract.
-  7. Transfer ownership of the token to the crowdsale contract for minting purposes.
-  8. Call `claimTokenOwnership` on the crowdsale contract to complete the token contract ownership transfer.
-  9. Call `claimTimelockOwnership` on the crowdsale contract to complete the timelock contract ownership transfer (NOTE: must be completed after token contract is owned by crowdsale).
-  10. Set the tokens per ETH rate.
-  11. Set the sale hardcap.
-  12. Set the setDefaultWhitelistCap.
-  13. Set whitelist participant addresses and approved amounts.
-
-## Finalization
-
-  1. Calling the `finalize` method transfers ownership of token back to crowdsale contract owner.
-  2. IMPORTANT: The contract owner must claim the token with `claimOwnership` for the transfer of ownership to be complete.
 
 The token ownerwill be responsible for removing the ability to mint further tokens.
